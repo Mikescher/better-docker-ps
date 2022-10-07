@@ -1,9 +1,8 @@
 
 build:
-	go build -o _out/dops cmd/dops/main.go
+	CGO_ENABLED=0 go build -o _out/dops cmd/dops/main.go
 
-run:
-	go build -o _out/dops cmd/dops/main.go
+run: build
 	./_out/dops
 
 clean:
