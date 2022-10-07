@@ -1,0 +1,39 @@
+
+########## GOLAND ##########
+
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/aws.xml
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+.idea/**/mongoSettings.xml
+*.iws
+atlassian-ide-plugin.xml
+.idea/httpRequests
+.idea/caches/build_file_checksums.ser
+.idea/$CACHE_FILE$
+
+########## Linux ##########
+
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+########## Custom ##########
+
+
+_out/*
+input.test
