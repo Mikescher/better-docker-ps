@@ -16,7 +16,7 @@ func SplitDockerImage(img string) (string, string, string) {
 	resultImage := ""
 	resultTag := ""
 
-	if v := strings.Split(img, ":"); len(v) > 0 {
+	if v := strings.Split(img, ":"); len(v) > 1 {
 		last := v[len(v)-1]
 		if !strings.Contains(last, "/") {
 			resultTag = last
@@ -24,7 +24,7 @@ func SplitDockerImage(img string) (string, string, string) {
 		}
 	}
 
-	if v := strings.Split(img, "/"); len(v) > 0 {
+	if v := strings.Split(img, "/"); len(v) > 1 {
 		first := v[0]
 		if len(v) == 3 {
 			resultRegistry = first

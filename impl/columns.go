@@ -121,19 +121,19 @@ func ColPorts(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 		return []string{"PORTS"}
 	}
 
-	r := make([]string, 0, len(cont.Ports))
+	r := make(map[string]bool)
 	for _, port := range cont.Ports {
 		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", 5)
 		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
 
 		if port.PublicPort == 0 {
-			r = append(r, fmt.Sprintf("         %s / %s", p2, port.Type))
+			r[fmt.Sprintf("         %s / %s", p2, port.Type)] = true
 		} else {
-			r = append(r, fmt.Sprintf("%s -> %s / %s", p1, p2, port.Type))
+			r[fmt.Sprintf("%s -> %s / %s", p1, p2, port.Type)] = true
 		}
 	}
 
-	return r
+	return langext.MapKeyArr(r)
 }
 
 func ColName(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
