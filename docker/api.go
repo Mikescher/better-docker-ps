@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func ListContainer(ctx *cli.PSContext) ([]byte, error) {
@@ -42,6 +44,10 @@ func ListContainer(ctx *cli.PSContext) ([]byte, error) {
 		uri += "&size=true"
 	}
 
+	if ctx.Opt.Limit != -1 {
+		uri += "&limit=" + strconv.Itoa(ctx.Opt.Limit)
+	}
+
 	if ctx.Opt.Filter != nil {
 		bin, err := json.Marshal(*ctx.Opt.Filter)
 		if err != nil {
@@ -53,7 +59,11 @@ func ListContainer(ctx *cli.PSContext) ([]byte, error) {
 
 	response, err := client.Get(uri)
 	if err != nil {
-		return nil, pserr.DirectOutput.Wrap(err, "Call to unix socket failed")
+		if strings.Contains(err.Error(), "connect: permission denied") {
+			return nil, pserr.DirectOutput.Wrap(err, "Call to unix socket failed (permission denied)")
+		} else {
+			return nil, pserr.DirectOutput.Wrap(err, "Call to unix socket failed")
+		}
 	}
 
 	body, err := io.ReadAll(response.Body)

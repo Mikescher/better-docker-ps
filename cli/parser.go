@@ -1,27 +1,27 @@
-package parser
+package cli
 
 import (
-	"better-docker-ps/cli"
 	"better-docker-ps/fferr"
 	"better-docker-ps/langext"
 	"github.com/joomcode/errorx"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
-func ParseCommandline() (cli.Options, error) {
+func ParseCommandline() (Options, error) {
 	o, err := parseCommandlineInternal()
 	if err != nil {
-		return cli.Options{}, errorx.Decorate(err, "failed to parse commandline")
+		return Options{}, errorx.Decorate(err, "failed to parse commandline")
 	}
 	return o, nil
 }
 
-func parseCommandlineInternal() (cli.Options, error) {
+func parseCommandlineInternal() (Options, error) {
 	unprocessedArgs := os.Args[1:]
 
-	allOptionArguments := make([]cli.ArgumentTuple, 0)
+	allOptionArguments := make([]ArgumentTuple, 0)
 
 	for len(unprocessedArgs) > 0 {
 		arg := unprocessedArgs[0]
@@ -36,26 +36,26 @@ func parseCommandlineInternal() (cli.Options, error) {
 				val := arg[strings.Index(arg, "=")+1:]
 
 				if len(key) <= 1 {
-					return cli.Options{}, pserr.DirectOutput.New("Unknown/Misplaced argument: " + arg)
+					return Options{}, pserr.DirectOutput.New("Unknown/Misplaced argument: " + arg)
 				}
 
-				allOptionArguments = append(allOptionArguments, cli.ArgumentTuple{Key: key, Value: langext.Ptr(val)})
+				allOptionArguments = append(allOptionArguments, ArgumentTuple{Key: key, Value: langext.Ptr(val)})
 				continue
 			} else {
 
 				key := arg
 
 				if len(key) <= 1 {
-					return cli.Options{}, pserr.DirectOutput.New("Unknown/Misplaced argument: " + arg)
+					return Options{}, pserr.DirectOutput.New("Unknown/Misplaced argument: " + arg)
 				}
 
 				if len(unprocessedArgs) == 0 || strings.HasPrefix(unprocessedArgs[0], "-") {
-					allOptionArguments = append(allOptionArguments, cli.ArgumentTuple{Key: key, Value: nil})
+					allOptionArguments = append(allOptionArguments, ArgumentTuple{Key: key, Value: nil})
 					continue
 				} else {
 					val := unprocessedArgs[0]
 					unprocessedArgs = unprocessedArgs[1:]
-					allOptionArguments = append(allOptionArguments, cli.ArgumentTuple{Key: key, Value: langext.Ptr(val)})
+					allOptionArguments = append(allOptionArguments, ArgumentTuple{Key: key, Value: langext.Ptr(val)})
 					continue
 				}
 
@@ -67,7 +67,7 @@ func parseCommandlineInternal() (cli.Options, error) {
 
 			if len(arg) > 1 {
 				for i := 1; i < len(arg); i++ {
-					allOptionArguments = append(allOptionArguments, cli.ArgumentTuple{Key: arg[i : i+1], Value: nil})
+					allOptionArguments = append(allOptionArguments, ArgumentTuple{Key: arg[i : i+1], Value: nil})
 				}
 				continue
 			}
@@ -75,40 +75,36 @@ func parseCommandlineInternal() (cli.Options, error) {
 			key := arg
 
 			if key == "" {
-				return cli.Options{}, pserr.DirectOutput.New("Unknown/Misplaced argument: " + arg)
+				return Options{}, pserr.DirectOutput.New("Unknown/Misplaced argument: " + arg)
 			}
 
 			if len(unprocessedArgs) == 0 || strings.HasPrefix(unprocessedArgs[0], "-") {
-				allOptionArguments = append(allOptionArguments, cli.ArgumentTuple{Key: key, Value: nil})
+				allOptionArguments = append(allOptionArguments, ArgumentTuple{Key: key, Value: nil})
 				continue
 			} else {
 				val := unprocessedArgs[0]
 				unprocessedArgs = unprocessedArgs[1:]
-				allOptionArguments = append(allOptionArguments, cli.ArgumentTuple{Key: key, Value: langext.Ptr(val)})
+				allOptionArguments = append(allOptionArguments, ArgumentTuple{Key: key, Value: langext.Ptr(val)})
 				continue
 			}
 
 		} else {
-			return cli.Options{}, pserr.DirectOutput.New("Unknown/Misplaced argument: " + arg)
+			return Options{}, pserr.DirectOutput.New("Unknown/Misplaced argument: " + arg)
 		}
 	}
 
 	// Process common options
 
-	opt := cli.DefaultCLIOptions()
+	opt := DefaultCLIOptions()
 
 	for _, arg := range allOptionArguments {
 
 		if (arg.Key == "h" || arg.Key == "help") && arg.Value == nil {
-			return cli.Options{Help: true}, nil
+			return Options{Help: true}, nil
 		}
 
 		if arg.Key == "version" && arg.Value == nil {
-			return cli.Options{Version: true}, nil
-		}
-
-		if arg.Key == "version" && arg.Value == nil {
-			return cli.Options{Version: true}, nil
+			return Options{Version: true}, nil
 		}
 
 		if (arg.Key == "v" || arg.Key == "verbose") && arg.Value == nil {
@@ -116,17 +112,27 @@ func parseCommandlineInternal() (cli.Options, error) {
 			continue
 		}
 
-		if (arg.Key == "q" || arg.Key == "quiet") && arg.Value == nil {
+		if (arg.Key == "silent") && arg.Value == nil {
 			opt.Quiet = true
+			continue
+		}
+
+		if (arg.Key == "q" || arg.Key == "quiet") && arg.Value == nil {
+			opt.OnlyIDs = true
 			continue
 		}
 
 		if arg.Key == "timezone" && arg.Value != nil {
 			loc, err := time.LoadLocation(*arg.Value)
 			if err != nil {
-				return cli.Options{}, pserr.DirectOutput.New("Unknown timezone: " + *arg.Value)
+				return Options{}, pserr.DirectOutput.New("Unknown timezone: " + *arg.Value)
 			}
 			opt.TimeZone = loc
+			continue
+		}
+
+		if arg.Key == "timeformat" && arg.Value != nil {
+			opt.TimeFormat = *arg.Value
 			continue
 		}
 
@@ -151,6 +157,7 @@ func parseCommandlineInternal() (cli.Options, error) {
 		}
 
 		if (arg.Key == "input") && arg.Value != nil {
+			// used for testing
 			opt.Input = langext.Ptr(*arg.Value)
 			continue
 		}
@@ -168,7 +175,7 @@ func parseCommandlineInternal() (cli.Options, error) {
 		if (arg.Key == "filter") && arg.Value != nil {
 			spl := strings.SplitN(*arg.Value, "=", 2)
 			if len(spl) != 2 {
-				return cli.Options{}, pserr.DirectOutput.New("Filter argument must have a key and a value (a=b): " + arg.Key)
+				return Options{}, pserr.DirectOutput.New("Filter argument must have a key and a value (a=b): " + arg.Key)
 			}
 			if opt.Filter == nil {
 				_v := make(map[string]string)
@@ -180,7 +187,37 @@ func parseCommandlineInternal() (cli.Options, error) {
 			continue
 		}
 
-		return cli.Options{}, pserr.DirectOutput.New("Unknown argument: " + arg.Key)
+		if (arg.Key == "format") && arg.Value != nil {
+			opt.Format = *arg.Value
+			continue
+		}
+
+		if (arg.Key == "last" || arg.Key == "n") && arg.Value != nil {
+			if v, err := strconv.ParseInt(*arg.Value, 10, 32); err == nil {
+				opt.Limit = int(v)
+				opt.All = true
+				continue
+			}
+			return Options{}, pserr.DirectOutput.New("Failed to parse number argument '--last': '" + *arg.Value + "'")
+		}
+
+		if (arg.Key == "latest" || arg.Key == "l") && arg.Value != nil {
+			opt.Limit = 1
+			opt.All = true
+			continue
+		}
+
+		if (arg.Key == "no-trunc") && arg.Value == nil {
+			opt.Truncate = false
+			continue
+		}
+
+		if (arg.Key == "no-header") && arg.Value != nil {
+			opt.PrintHeader = false
+			continue
+		}
+
+		return Options{}, pserr.DirectOutput.New("Unknown argument: " + arg.Key)
 	}
 
 	return opt, nil

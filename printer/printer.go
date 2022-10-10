@@ -14,7 +14,7 @@ func Print(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) {
 
 	var cells = make([][]string, 0)
 
-	{
+	if ctx.Opt.PrintHeader {
 		row := make([]string, 0)
 
 		for _, fn := range cols {
@@ -67,7 +67,7 @@ func Print(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) {
 			ctx.PrintPrimaryOutput(rowstr)
 		}
 
-		if rowidx == 0 {
+		if ctx.Opt.PrintHeader && rowidx == 0 {
 			rowstr := ""
 			for colidx := range row {
 				if colidx > 0 {

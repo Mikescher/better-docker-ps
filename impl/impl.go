@@ -6,9 +6,14 @@ import (
 	pserr "better-docker-ps/fferr"
 	"better-docker-ps/printer"
 	"encoding/json"
+	"strings"
 )
 
 func Execute(ctx *cli.PSContext) error {
+	if strings.Contains(ctx.Opt.Format, "{{.Size}}") {
+		ctx.Opt.WithSize = true
+	}
+
 	jsonraw, err := docker.ListContainer(ctx)
 	if err != nil {
 		return err
@@ -20,7 +25,28 @@ func Execute(ctx *cli.PSContext) error {
 		return pserr.DirectOutput.Wrap(err, "Failed to decode Docker API response")
 	}
 
-	columns := []printer.ColFun{ //TODO make configurable
+	if ctx.Opt.OnlyIDs {
+		for _, v := range data {
+			if ctx.Opt.Truncate {
+				ctx.PrintPrimaryOutput(v.ID[0:12])
+			} else {
+				ctx.PrintPrimaryOutput(v.ID)
+			}
+		}
+		return nil
+	} else if strings.HasPrefix(ctx.Opt.Format, "table ") {
+
+		//TODO
+
+	} else {
+
+		//TODO
+
+	}
+
+	//TODO make configurable (--format?)
+	//TODO default == auto (columns have priority and get removed based on term width ??)
+	columns := []printer.ColFun{
 		ColContainerID,
 		ColName,
 		//ColFullImage,
@@ -29,7 +55,7 @@ func Execute(ctx *cli.PSContext) error {
 		ColImageTag,
 		//ColCommand,
 		//ColShortCommand,
-		ColCreated,
+		ColRunningFor,
 		ColState,
 		ColStatus,
 		ColPorts,

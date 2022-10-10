@@ -5,18 +5,47 @@ import (
 	"better-docker-ps/docker"
 	"better-docker-ps/langext"
 	"better-docker-ps/langext/term"
+	"better-docker-ps/printer"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 )
 
+var ColumnMap = map[string]printer.ColFun{
+	"ID":            ColContainerID,
+	"Image":         ColFullImage,
+	"ImageName":     ColImage,
+	"ImageTag":      ColImageTag,
+	"Registry":      ColRegistry,
+	"ImageRegistry": ColRegistry,
+	"Tag":           ColImageTag,
+	"Command":       ColCommand,
+	"ShortCommand":  ColShortCommand,
+	"CreatedAt":     ColCreatedAt,
+	"RunningFor":    ColRunningFor,
+	"Ports":         ColPorts,
+	"State":         ColState,
+	"Status":        ColStatus,
+	"Size":          ColSize,
+	"Names":         ColName,
+	"Labels":        ColLabels,
+	"LabelsKeys":    ColLabelKeys,
+	"Mounts":        ColMounts,
+	"Networks":      ColNetworks,
+	"IP":            ColIP,
+}
+
 func ColContainerID(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"CONTAINER ID"}
 	}
 
-	return []string{cont.ID[0:12]}
+	if ctx.Opt.Truncate {
+		return []string{cont.ID[0:12]}
+	} else {
+		return []string{cont.ID}
+	}
 }
 
 func ColFullImage(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
@@ -62,7 +91,14 @@ func ColCommand(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 		return []string{"COMMAND"}
 	}
 
-	return []string{cont.Command}
+	cmd := cont.Command
+	if ctx.Opt.Truncate && len(cmd) > 20 {
+		cmd = cmd[:19] + "…"
+	}
+
+	cmd = "\"" + cmd + "\""
+
+	return []string{cmd}
 }
 
 func ColShortCommand(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
@@ -79,7 +115,7 @@ func ColShortCommand(ctx *cli.PSContext, cont *docker.ContainerSchema) []string 
 
 }
 
-func ColCreated(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColRunningFor(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"CREATED"}
 	}
@@ -88,6 +124,16 @@ func ColCreated(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	diff := time.Now().Sub(ts)
 
 	return []string{langext.FormatNaturalDurationEnglish(diff)}
+}
+
+func ColCreatedAt(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"CREATED AT"}
+	}
+
+	ts := time.Unix(cont.Created, 0)
+
+	return []string{ts.In(ctx.Opt.TimeZone).Format(ctx.Opt.TimeFormat)}
 }
 
 func ColState(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
@@ -191,6 +237,45 @@ func ColIP(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 		if nw.IPAddress != "" {
 			r = append(r, nw.IPAddress)
 		}
+	}
+
+	return r
+}
+
+func ColLabels(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"LABELS"}
+	}
+
+	r := make([]string, 0, len(cont.Mounts))
+	for k, v := range cont.Labels {
+		r = append(r, fmt.Sprintf("%s := %s", k, v))
+	}
+
+	return r
+}
+
+func ColLabelKeys(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"LABELS"}
+	}
+
+	r := make([]string, 0, len(cont.Mounts))
+	for k, _ := range cont.Labels {
+		r = append(r, k)
+	}
+
+	return r
+}
+
+func ColNetworks(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"NETWORKS"}
+	}
+
+	r := make([]string, 0, len(cont.Mounts))
+	for k := range cont.NetworkSettings.Networks {
+		r = append(r, k)
 	}
 
 	return r
