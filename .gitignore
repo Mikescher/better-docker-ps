@@ -36,4 +36,13 @@ atlassian-ide-plugin.xml
 
 
 _out/*
+
 input.test
+input1.test
+input2.test
+input.json
+input1.json
+input2.json
+input_small.json
+input1_small.json
+input2_small.json
