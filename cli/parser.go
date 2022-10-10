@@ -118,7 +118,8 @@ func parseCommandlineInternal() (Options, error) {
 		}
 
 		if (arg.Key == "q" || arg.Key == "quiet") && arg.Value == nil {
-			opt.OnlyIDs = true
+			opt.Format = []string{"idlist"}
+			opt.DefaultFormat = false
 			continue
 		}
 
@@ -188,7 +189,11 @@ func parseCommandlineInternal() (Options, error) {
 		}
 
 		if (arg.Key == "format") && arg.Value != nil {
-			opt.Format = *arg.Value
+			if opt.DefaultFormat {
+				opt.Format = make([]string, 0)
+			}
+			opt.Format = append(opt.Format, *arg.Value)
+			opt.DefaultFormat = false
 			continue
 		}
 
@@ -207,13 +212,18 @@ func parseCommandlineInternal() (Options, error) {
 			continue
 		}
 
-		if (arg.Key == "no-trunc") && arg.Value == nil {
+		if (arg.Key == "no-trunc" || arg.Key == "no-truncate") && arg.Value == nil {
 			opt.Truncate = false
 			continue
 		}
 
-		if (arg.Key == "no-header") && arg.Value != nil {
+		if (arg.Key == "no-header") && arg.Value == nil {
 			opt.PrintHeader = false
+			continue
+		}
+
+		if (arg.Key == "simple-header") && arg.Value == nil {
+			opt.PrintHeaderLines = false
 			continue
 		}
 

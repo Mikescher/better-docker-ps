@@ -4,14 +4,19 @@ import (
 	"better-docker-ps/cli"
 	"better-docker-ps/docker"
 	pserr "better-docker-ps/fferr"
+	"better-docker-ps/langext"
 	"better-docker-ps/printer"
 	"encoding/json"
+	"golang.org/x/term"
+	"os"
 	"strings"
 )
 
 func Execute(ctx *cli.PSContext) error {
-	if strings.Contains(ctx.Opt.Format, "{{.Size}}") {
-		ctx.Opt.WithSize = true
+	for _, fmt := range ctx.Opt.Format {
+		if strings.Contains(fmt, "{{.Size}}") {
+			ctx.Opt.WithSize = true
+		}
 	}
 
 	jsonraw, err := docker.ListContainer(ctx)
@@ -25,7 +30,24 @@ func Execute(ctx *cli.PSContext) error {
 		return pserr.DirectOutput.Wrap(err, "Failed to decode Docker API response")
 	}
 
-	if ctx.Opt.OnlyIDs {
+	for i, v := range ctx.Opt.Format {
+
+		ok, err := doOutput(ctx, data, v, i == len(ctx.Opt.Format)-1)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return nil
+		}
+
+	}
+
+	return pserr.DirectOutput.New("Missing format specification for output")
+}
+
+func doOutput(ctx *cli.PSContext, data []docker.ContainerSchema, format string, force bool) (bool, error) {
+	if format == "idlist" {
+
 		for _, v := range data {
 			if ctx.Opt.Truncate {
 				ctx.PrintPrimaryOutput(v.ID[0:12])
@@ -33,38 +55,45 @@ func Execute(ctx *cli.PSContext) error {
 				ctx.PrintPrimaryOutput(v.ID)
 			}
 		}
-		return nil
-	} else if strings.HasPrefix(ctx.Opt.Format, "table ") {
+		return true, nil
 
-		//TODO
+	} else if strings.HasPrefix(format, "table ") {
+
+		columns := parseTableDef(format)
+		outWidth := printer.Width(ctx, data, columns)
+
+		if !force {
+			termWidth, _, err := term.GetSize(int(os.Stdout.Fd()))
+			if err == nil && 0 < termWidth && termWidth < outWidth {
+				return false, nil
+			}
+		}
+
+		printer.Print(ctx, data, columns)
+		return true, nil
 
 	} else {
 
-		//TODO
+		lines := make([]string, 0)
+		outWidth := 0
+
+		for _, v := range data {
+			str := replaceSingleLineColumnData(ctx, v, format)
+			lines = append(lines, str)
+			outWidth = langext.Max(outWidth, printer.RealStrLen(str))
+		}
+
+		if !force {
+			termWidth, _, err := term.GetSize(int(os.Stdout.Fd()))
+			if err == nil && 0 < termWidth && termWidth < outWidth {
+				return false, nil
+			}
+		}
+
+		for _, v := range lines {
+			ctx.PrintPrimaryOutput(v)
+		}
+		return true, nil
 
 	}
-
-	//TODO make configurable (--format?)
-	//TODO default == auto (columns have priority and get removed based on term width ??)
-	columns := []printer.ColFun{
-		ColContainerID,
-		ColName,
-		//ColFullImage,
-		//ColRegistry,
-		//ColImage,
-		ColImageTag,
-		//ColCommand,
-		//ColShortCommand,
-		ColRunningFor,
-		ColState,
-		ColStatus,
-		ColPorts,
-		//ColSize,
-		//ColMounts,
-		ColIP,
-	}
-
-	printer.Print(ctx, data, columns)
-
-	return nil
 }

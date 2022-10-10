@@ -85,6 +85,8 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  --socket <filepath>                Specify the docker socket location (Default: /var/run/docker.sock)")
 	ctx.PrintPrimaryOutput("  --timeformat <go-time-fmt>         Specify the datetime output format (golang syntax)")
 	ctx.PrintPrimaryOutput("  --no-header                        Do not print the table header")
+	ctx.PrintPrimaryOutput("  --simple-header                    Do not print the lines under the header")
+	ctx.PrintPrimaryOutput("  --format <fmt>                     You can specify multiple formats and the first one that fits your terminal widt will be used")
 	ctx.PrintPrimaryOutput("")
 	ctx.PrintPrimaryOutput("Available --format keys (default):")
 	ctx.PrintPrimaryOutput("  {{.ID}                             Container ID")
@@ -107,7 +109,7 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  {{.ImageTag}, {{.Tag}              Image Tag")
 	ctx.PrintPrimaryOutput("  {{.ImageRegistry}, {{.Registry}    Image Registry")
 	ctx.PrintPrimaryOutput("  {{.ShortCommand}                   Command without arguments")
-	ctx.PrintPrimaryOutput("  {{.LabelsKeys}                     All labels assigned to the container (keys only)")
+	ctx.PrintPrimaryOutput("  {{.LabelKeys}                      All labels assigned to the container (keys only)")
 	ctx.PrintPrimaryOutput("  {{.IP}                             Internal IP Address")
 	ctx.PrintPrimaryOutput("")
 }

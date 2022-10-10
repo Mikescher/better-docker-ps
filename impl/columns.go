@@ -30,7 +30,7 @@ var ColumnMap = map[string]printer.ColFun{
 	"Size":          ColSize,
 	"Names":         ColName,
 	"Labels":        ColLabels,
-	"LabelsKeys":    ColLabelKeys,
+	"LabelKeys":     ColLabelKeys,
 	"Mounts":        ColMounts,
 	"Networks":      ColNetworks,
 	"IP":            ColIP,
@@ -279,6 +279,46 @@ func ColNetworks(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	}
 
 	return r
+}
+
+func ColPlaintext(str string) printer.ColFun {
+	return func(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+		return []string{str}
+	}
+}
+
+func getColFun(colkey string) (printer.ColFun, bool) {
+	for k, v := range ColumnMap {
+		if "{{."+k+"}}" == colkey {
+			return v, true
+		}
+	}
+	return nil, false
+}
+
+func replaceSingleLineColumnData(ctx *cli.PSContext, data docker.ContainerSchema, format string) string {
+
+	r := format
+
+	for k, v := range ColumnMap {
+		r = strings.ReplaceAll(r, "{{."+k+"}}", strings.Join(v(ctx, &data), " "))
+	}
+
+	return r
+
+}
+
+func parseTableDef(fmt string) []printer.ColFun {
+	split := strings.Split(fmt[6:], "\\t")
+	columns1 := make([]printer.ColFun, 0)
+	for _, v := range split {
+		if cf, ok := getColFun(v); ok {
+			columns1 = append(columns1, cf)
+		} else {
+			columns1 = append(columns1, ColPlaintext(v))
+		}
+	}
+	return columns1
 }
 
 func stateColor(state docker.ContainerState, value string) string {
