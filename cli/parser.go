@@ -134,6 +134,12 @@ func parseCommandlineInternal() (Options, error) {
 
 		if arg.Key == "timeformat" && arg.Value != nil {
 			opt.TimeFormat = *arg.Value
+			opt.TimeFormatHeader = ""
+			continue
+		}
+
+		if arg.Key == "timeformat-header" && arg.Value != nil {
+			opt.TimeFormatHeader = *arg.Value
 			continue
 		}
 

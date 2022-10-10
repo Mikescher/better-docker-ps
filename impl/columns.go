@@ -128,7 +128,12 @@ func ColRunningFor(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 
 func ColCreatedAt(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	if cont == nil {
-		return []string{"CREATED AT"}
+		if ctx.Opt.TimeFormatHeader != "" {
+			hdr := time.Now().In(ctx.Opt.TimeZone).Format(ctx.Opt.TimeFormatHeader)
+			return []string{"CREATED AT (" + hdr + ")"}
+		} else {
+			return []string{"CREATED AT"}
+		}
 	}
 
 	ts := time.Unix(cont.Created, 0)
@@ -159,7 +164,7 @@ func ColStatus(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 		return []string{cont.Status}
 	}
 
-	return []string{stateColor(cont.State, cont.Status)}
+	return []string{statusColor(cont.Status, cont.Status)}
 }
 
 func ColPorts(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
@@ -336,5 +341,28 @@ func stateColor(state docker.ContainerState, value string) string {
 	case docker.StateDead:
 		return term.Red(value)
 	}
+	return value
+}
+
+func statusColor(status string, value string) string {
+	if status == "Created" {
+		return term.Yellow(value)
+	}
+
+	if strings.HasPrefix(status, "Exited") {
+		return term.Red(value)
+	}
+
+	if strings.HasPrefix(status, "Up") {
+		if strings.HasSuffix(status, "(unhealthy)") {
+			return term.Red(value)
+		}
+		if strings.HasSuffix(status, "(health: starting)") {
+			return term.Yellow(value)
+		}
+
+		return term.Green(value)
+	}
+
 	return value
 }
