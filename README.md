@@ -30,7 +30,7 @@ More Changes from default docker-ps:
 
  - Download the latest binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases)
  - but it into yout PATH (eg /usr/local/bin)
- - (optional) alias teh docker ps command (see [section below](#usage-as-drop-in-replacement))
+ - (optional) alias the docker ps command (see [section below](#usage-as-drop-in-replacement))
 
 ## Screenshots
 
