@@ -117,26 +117,26 @@ Options (extra | do not exist in `docker ps`):
   --format <fmt>                     You can specify multiple formats and the first one that fits your terminal widt will be used
 
 Available --format keys (default):
-  {{.ID}                             Container ID
-  {{.Image}                          Image ID
-  {{.Command}                        Quoted command
-  {{.CreatedAt}                      Time when the container was created.
-  {{.RunningFor}                     Elapsed time since the container was started.
-  {{.Ports}                          Exposed ports.
-  {{.State}                          Container status
-  {{.Status}                         Container status with details
-  {{.Size}                           Container disk size.
-  {{.Names}                          Container names.
-  {{.Labels}                         All labels assigned to the container.
-  {{.Label}                          [!] Unsupported
-  {{.Mounts}                         Names of the volumes mounted in this container.
-  {{.Networks}                       Names of the networks attached to this container.
+  {{.ID}}                            Container ID
+  {{.Image}}                         Image ID
+  {{.Command}}                       Quoted command
+  {{.CreatedAt}}                     Time when the container was created.
+  {{.RunningFor}}                    Elapsed time since the container was started.
+  {{.Ports}}                         Exposed ports.
+  {{.State}}                         Container status
+  {{.Status}}                        Container status with details
+  {{.Size}}                          Container disk size.
+  {{.Names}}                         Container names.
+  {{.Labels}}                        All labels assigned to the container.
+  {{.Label}}                         [!] Unsupported
+  {{.Mounts}}                        Names of the volumes mounted in this container.
+  {{.Networks}}                      Names of the networks attached to this container.
 
 Available --format keys (extra | do not exist in `docker ps`):
-  {{.ImageName}                      Image ID (without tag and registry)
-  {{.ImageTag}, {{.Tag}              Image Tag
-  {{.ImageRegistry}, {{.Registry}    Image Registry
-  {{.ShortCommand}                   Command without arguments
-  {{.LabelKeys}                      All labels assigned to the container (keys only)
-  {{.IP}                             Internal IP Address
+  {{.ImageName}}                     Image ID (without tag and registry)
+  {{.ImageTag}}, {{.Tag}}            Image Tag
+  {{.ImageRegistry}}, {{.Registry}}  Image Registry
+  {{.ShortCommand}}                  Command without arguments
+  {{.LabelKeys}}                     All labels assigned to the container (keys only)
+  {{.IP}}                            Internal IP Address
 ~~~~~~
