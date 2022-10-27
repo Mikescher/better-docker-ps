@@ -2,11 +2,11 @@ package cli
 
 import (
 	pserr "better-docker-ps/fferr"
-	"better-docker-ps/langext"
-	"better-docker-ps/langext/term"
 	"context"
 	"encoding/hex"
 	"fmt"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 	"os"
 	"strings"
 	"time"
@@ -115,7 +115,7 @@ func (c PSContext) printErrorRaw(msg string) {
 	}
 
 	if c.Opt.OutputColor {
-		writeStderr(term.Red(msg))
+		writeStderr(termext.Red(msg))
 	} else {
 		writeStderr(msg)
 	}
@@ -127,7 +127,7 @@ func (c PSContext) printVerboseRaw(msg string) {
 	}
 
 	if c.Opt.OutputColor {
-		writeStdout(term.Gray(msg))
+		writeStdout(termext.Gray(msg))
 	} else {
 		writeStdout(msg)
 	}

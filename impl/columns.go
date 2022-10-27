@@ -3,10 +3,11 @@ package impl
 import (
 	"better-docker-ps/cli"
 	"better-docker-ps/docker"
-	"better-docker-ps/langext"
-	"better-docker-ps/langext/term"
 	"better-docker-ps/printer"
 	"fmt"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/termext"
+	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"strconv"
 	"strings"
 	"time"
@@ -123,7 +124,7 @@ func ColRunningFor(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	ts := time.Unix(cont.Created, 0)
 	diff := time.Now().Sub(ts)
 
-	return []string{langext.FormatNaturalDurationEnglish(diff)}
+	return []string{timeext.FormatNaturalDurationEnglish(diff)}
 }
 
 func ColCreatedAt(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
@@ -329,39 +330,39 @@ func parseTableDef(fmt string) []printer.ColFun {
 func stateColor(state docker.ContainerState, value string) string {
 	switch state {
 	case docker.StateCreated:
-		return term.Yellow(value)
+		return termext.Yellow(value)
 	case docker.StateRunning:
-		return term.Green(value)
+		return termext.Green(value)
 	case docker.StateRestarting:
-		return term.Yellow(value)
+		return termext.Yellow(value)
 	case docker.StateExited:
-		return term.Red(value)
+		return termext.Red(value)
 	case docker.StatePaused:
-		return term.Yellow(value)
+		return termext.Yellow(value)
 	case docker.StateDead:
-		return term.Red(value)
+		return termext.Red(value)
 	}
 	return value
 }
 
 func statusColor(status string, value string) string {
 	if status == "Created" {
-		return term.Yellow(value)
+		return termext.Yellow(value)
 	}
 
 	if strings.HasPrefix(status, "Exited") {
-		return term.Red(value)
+		return termext.Red(value)
 	}
 
 	if strings.HasPrefix(status, "Up") {
 		if strings.HasSuffix(status, "(unhealthy)") {
-			return term.Red(value)
+			return termext.Red(value)
 		}
 		if strings.HasSuffix(status, "(health: starting)") {
-			return term.Yellow(value)
+			return termext.Yellow(value)
 		}
 
-		return term.Green(value)
+		return termext.Green(value)
 	}
 
 	return value

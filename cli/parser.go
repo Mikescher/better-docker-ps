@@ -2,8 +2,8 @@ package cli
 
 import (
 	"better-docker-ps/fferr"
-	"better-docker-ps/langext"
 	"github.com/joomcode/errorx"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"os"
 	"strconv"
 	"strings"

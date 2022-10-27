@@ -4,9 +4,9 @@ import (
 	"better-docker-ps/cli"
 	"better-docker-ps/docker"
 	pserr "better-docker-ps/fferr"
-	"better-docker-ps/langext"
 	"better-docker-ps/printer"
 	"encoding/json"
+	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
 	"golang.org/x/term"
 	"os"
 	"strings"
@@ -80,7 +80,7 @@ func doOutput(ctx *cli.PSContext, data []docker.ContainerSchema, format string, 
 		for _, v := range data {
 			str := replaceSingleLineColumnData(ctx, v, format)
 			lines = append(lines, str)
-			outWidth = langext.Max(outWidth, printer.RealStrLen(str))
+			outWidth = mathext.Max(outWidth, printer.RealStrLen(str))
 		}
 
 		if !force {

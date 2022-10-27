@@ -3,8 +3,8 @@ package printer
 import (
 	"better-docker-ps/cli"
 	"better-docker-ps/docker"
-	"better-docker-ps/langext"
-	"better-docker-ps/langext/term"
+	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
+	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 	"strings"
 )
 
@@ -31,7 +31,7 @@ func Width(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) int
 		for _, fn := range cols {
 			h := fn(ctx, &dat)
 			extrow = append(extrow, h)
-			maxheight = langext.Max(maxheight, len(h))
+			maxheight = mathext.Max(maxheight, len(h))
 		}
 
 		for yy := 0; yy < maxheight; yy++ {
@@ -49,7 +49,7 @@ func Width(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) int
 	lens := make([]int, len(cells[0]))
 	for _, row := range cells {
 		for i, cell := range row {
-			lens[i] = langext.Max(lens[i], RealStrLen(cell))
+			lens[i] = mathext.Max(lens[i], RealStrLen(cell))
 		}
 	}
 
@@ -83,7 +83,7 @@ func Print(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) {
 		for _, fn := range cols {
 			h := fn(ctx, &dat)
 			extrow = append(extrow, h)
-			maxheight = langext.Max(maxheight, len(h))
+			maxheight = mathext.Max(maxheight, len(h))
 		}
 
 		for yy := 0; yy < maxheight; yy++ {
@@ -101,7 +101,7 @@ func Print(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) {
 	lens := make([]int, len(cells[0]))
 	for _, row := range cells {
 		for i, cell := range row {
-			lens[i] = langext.Max(lens[i], RealStrLen(cell))
+			lens[i] = mathext.Max(lens[i], RealStrLen(cell))
 		}
 	}
 
@@ -137,7 +137,7 @@ func Print(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) {
 }
 
 func RealStrLen(cell string) int {
-	return len([]rune(term.CleanString(cell)))
+	return len([]rune(termext.CleanString(cell)))
 }
 
 func TermStrPadRight(str string, pad string, padlen int) string {

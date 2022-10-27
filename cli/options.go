@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"better-docker-ps/langext/term"
+	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 	"time"
 )
 
@@ -33,7 +33,7 @@ func DefaultCLIOptions() Options {
 		Help:             false,
 		Quiet:            false,
 		Verbose:          false,
-		OutputColor:      term.SupportsColors(),
+		OutputColor:      termext.SupportsColors(),
 		TimeZone:         time.Local,
 		TimeFormatHeader: "Z07:00 MST",
 		TimeFormat:       "2006-01-02 15:04:05",
