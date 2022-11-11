@@ -3,11 +3,10 @@ package docker
 import (
 	"better-docker-ps/cli"
 	"better-docker-ps/consts"
-	pserr "better-docker-ps/fferr"
+	"better-docker-ps/pserr"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/joomcode/errorx"
 	"io"
 	"net"
 	"net/http"
@@ -15,6 +14,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/joomcode/errorx"
 )
 
 func ListContainer(ctx *cli.PSContext) ([]byte, error) {

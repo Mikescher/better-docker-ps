@@ -1,15 +1,16 @@
 package cli
 
 import (
-	pserr "better-docker-ps/fferr"
+	"better-docker-ps/pserr"
 	"context"
 	"encoding/hex"
 	"fmt"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
-	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 	"os"
 	"strings"
 	"time"
+
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 )
 
 type PSContext struct {

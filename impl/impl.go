@@ -3,13 +3,14 @@ package impl
 import (
 	"better-docker-ps/cli"
 	"better-docker-ps/docker"
-	pserr "better-docker-ps/fferr"
 	"better-docker-ps/printer"
+	"better-docker-ps/pserr"
 	"encoding/json"
-	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
-	"golang.org/x/term"
 	"os"
 	"strings"
+
+	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
+	"golang.org/x/term"
 )
 
 func Execute(ctx *cli.PSContext) error {

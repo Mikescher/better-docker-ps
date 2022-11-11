@@ -11,5 +11,5 @@ var (
 )
 
 var (
-	Exitcode = errorx.RegisterProperty("ffsync.exitcode")
+	Exitcode = errorx.RegisterProperty("dops.exitcode")
 )

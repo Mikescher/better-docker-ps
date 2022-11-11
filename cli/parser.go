@@ -1,13 +1,14 @@
 package cli
 
 import (
-	"better-docker-ps/fferr"
-	"github.com/joomcode/errorx"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"better-docker-ps/pserr"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/joomcode/errorx"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 )
 
 func ParseCommandline() (Options, error) {

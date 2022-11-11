@@ -3,8 +3,8 @@ package main
 import (
 	"better-docker-ps/cli"
 	"better-docker-ps/consts"
-	pserr "better-docker-ps/fferr"
 	"better-docker-ps/impl"
+	"better-docker-ps/pserr"
 	"fmt"
 	"os"
 	"runtime/debug"
