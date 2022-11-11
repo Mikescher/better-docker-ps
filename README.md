@@ -28,8 +28,12 @@ More Changes from default docker-ps:
 
 ## Getting started
 
- - Download the latest binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases)
- - but it into yout PATH (eg /usr/local/bin)
+ - Download the latest binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases) and put it into yout PATH (eg /usr/local/bin)
+
+ - Alternatively you can use one of the AUR packages (under Arch Linux):
+    * https://aur.archlinux.org/packages/dops-bin (installs `dops` into your PATH)
+    * https://aur.archlinux.org/packages/dops-git (installs `dops` into your PATH)
+    
  - (optional) alias the docker ps command (see [section below](#usage-as-drop-in-replacement))
 
 ## Screenshots
