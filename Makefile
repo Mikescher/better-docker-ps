@@ -28,3 +28,4 @@ package:
 
 	_data/package-data/aur-git.sh
 	_data/package-data/aur-bin.sh
+	_data/package-data/homebrew.sh

@@ -33,6 +33,8 @@ More Changes from default docker-ps:
  - Alternatively you can use one of the AUR packages (under Arch Linux):
     * https://aur.archlinux.org/packages/dops-bin (installs `dops` into your PATH)
     * https://aur.archlinux.org/packages/dops-git (installs `dops` into your PATH)
+ - or the homebrew package: 
+    * `brew tap mikescher/tap && brew install dops`
     
  - (optional) alias the docker ps command (see [section below](#usage-as-drop-in-replacement))
 
