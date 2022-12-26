@@ -89,6 +89,27 @@ function docker
 end
 ~~~
 
+## Changing the output format
+
+By default dops tries to be "intelligent" and find the best output format for your terminal width.
+The current output formats (= table columns) are defined in the [options.go](https://github.com/Mikescher/better-docker-ps/blob/master/cli/options.go).
+The first format that fits in your terminal width is used.
+
+But you can also override it by supplying a `--format` parameter. If you supply more than one `--format` parameter the first one that fits your terminal is used (same logic as with the default ones...)
+
+Examples:
+~~~~
+$ ./dops --format "table {{.ID}}"
+$ ./dops --format "table {{.ID}}\\t{{.Names}}\\t{{.State}}"
+
+$ ./dops --format "idlist"
+
+$ ./dops --format "table {{.ID}}\\t{{.Names}}\\t{{.State}}"  --format "table {{.ID}}\\t{{.Names}}" --format "table {{.ID}}"
+
+$ ./dops --format "ID: {{.ID}}; Name: {{.Names}}"
+~~~~
+
+
 ## Manual
 
 Output of `./dops --help`:
