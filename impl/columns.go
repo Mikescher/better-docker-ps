@@ -131,6 +131,9 @@ func ColCreatedAt(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		if ctx.Opt.TimeFormatHeader != "" {
 			hdr := time.Now().In(ctx.Opt.TimeZone).Format(ctx.Opt.TimeFormatHeader)
+			if hdr == "Z UTC" {
+				hdr = "UTC"
+			}
 			return []string{"CREATED AT (" + hdr + ")"}
 		} else {
 			return []string{"CREATED AT"}
