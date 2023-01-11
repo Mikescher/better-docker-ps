@@ -14,27 +14,30 @@ import (
 )
 
 var ColumnMap = map[string]printer.ColFun{
-	"ID":            ColContainerID,
-	"Image":         ColFullImage,
-	"ImageName":     ColImage,
-	"ImageTag":      ColImageTag,
-	"Registry":      ColRegistry,
-	"ImageRegistry": ColRegistry,
-	"Tag":           ColImageTag,
-	"Command":       ColCommand,
-	"ShortCommand":  ColShortCommand,
-	"CreatedAt":     ColCreatedAt,
-	"RunningFor":    ColRunningFor,
-	"Ports":         ColPorts,
-	"State":         ColState,
-	"Status":        ColStatus,
-	"Size":          ColSize,
-	"Names":         ColName,
-	"Labels":        ColLabels,
-	"LabelKeys":     ColLabelKeys,
-	"Mounts":        ColMounts,
-	"Networks":      ColNetworks,
-	"IP":            ColIP,
+	"ID":                ColContainerID,
+	"Image":             ColFullImage,
+	"ImageName":         ColImage,
+	"ImageTag":          ColImageTag,
+	"Registry":          ColRegistry,
+	"ImageRegistry":     ColRegistry,
+	"Tag":               ColImageTag,
+	"Command":           ColCommand,
+	"ShortCommand":      ColShortCommand,
+	"CreatedAt":         ColCreatedAt,
+	"RunningFor":        ColRunningFor,
+	"Ports":             ColPortsPublished,
+	"PublishedPorts":    ColPortsPublished,
+	"ExposedPorts":      ColPortsExposed,
+	"NotPublishedPorts": ColPortsNotPublished,
+	"State":             ColState,
+	"Status":            ColStatus,
+	"Size":              ColSize,
+	"Names":             ColName,
+	"Labels":            ColLabels,
+	"LabelKeys":         ColLabelKeys,
+	"Mounts":            ColMounts,
+	"Networks":          ColNetworks,
+	"IP":                ColIP,
 }
 
 func ColContainerID(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
@@ -171,24 +174,78 @@ func ColStatus(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{statusColor(cont.Status, cont.Status)}
 }
 
-func ColPorts(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColPortsExposed(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	if cont == nil {
-		return []string{"PORTS"}
+		return []string{"EXPOSED PORTS"}
 	}
 
-	r := make(map[string]bool)
+	m := make(map[string]bool)
+	r := make([]string, 0)
 	for _, port := range cont.Ports {
 		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", 5)
 		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
 
 		if port.PublicPort == 0 {
-			r[fmt.Sprintf("         %s / %s", p2, port.Type)] = true
+			str := fmt.Sprintf("         %s / %s", p2, port.Type)
+			if _, ok := m[str]; !ok {
+				m[str] = true
+				r = append(r, str)
+			}
 		} else {
-			r[fmt.Sprintf("%s -> %s / %s", p1, p2, port.Type)] = true
+			str := fmt.Sprintf("%s -> %s / %s", p1, p2, port.Type)
+			if _, ok := m[str]; !ok {
+				m[str] = true
+				r = append(r, str)
+			}
 		}
 	}
 
-	return langext.MapKeyArr(r)
+	return r
+}
+
+func ColPortsPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"PUBLISHED PORTS"}
+	}
+
+	m := make(map[string]bool)
+	r := make([]string, 0)
+	for _, port := range cont.Ports {
+		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", 5)
+		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
+
+		if port.PublicPort != 0 {
+			str := fmt.Sprintf("%s -> %s / %s", p1, p2, port.Type)
+			if _, ok := m[str]; !ok {
+				m[str] = true
+				r = append(r, str)
+			}
+		}
+	}
+
+	return r
+}
+
+func ColPortsNotPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"NOT PUBLISHED PORTS"}
+	}
+
+	m := make(map[string]bool)
+	r := make([]string, 0)
+	for _, port := range cont.Ports {
+		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
+
+		if port.PublicPort == 0 {
+			str := fmt.Sprintf("%s / %s", p2, port.Type)
+			if _, ok := m[str]; !ok {
+				m[str] = true
+				r = append(r, str)
+			}
+		}
+	}
+
+	return r
 }
 
 func ColName(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {

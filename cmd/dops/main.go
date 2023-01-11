@@ -94,7 +94,7 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  {{.Command}}                       Quoted command")
 	ctx.PrintPrimaryOutput("  {{.CreatedAt}}                     Time when the container was created.")
 	ctx.PrintPrimaryOutput("  {{.RunningFor}}                    Elapsed time since the container was started.")
-	ctx.PrintPrimaryOutput("  {{.Ports}}                         Exposed ports.")
+	ctx.PrintPrimaryOutput("  {{.Ports}}                         Published ports. ([!] differs from docker CLI, these are only the published ports)")
 	ctx.PrintPrimaryOutput("  {{.State}}                         Container status")
 	ctx.PrintPrimaryOutput("  {{.Status}}                        Container status with details")
 	ctx.PrintPrimaryOutput("  {{.Size}}                          Container disk size.")
@@ -110,6 +110,9 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  {{.ImageRegistry}, {{.Registry}    Image Registry")
 	ctx.PrintPrimaryOutput("  {{.ShortCommand}                   Command without arguments")
 	ctx.PrintPrimaryOutput("  {{.LabelKeys}                      All labels assigned to the container (keys only)")
+	ctx.PrintPrimaryOutput("  {{.ExposedPorts}}                  Exposed ports")
+	ctx.PrintPrimaryOutput("  {{.NotPublishedPorts}}             Exposed but not published ports")
+	ctx.PrintPrimaryOutput("  {{.PublishedPorts}}                Published ports")
 	ctx.PrintPrimaryOutput("  {{.IP}                             Internal IP Address")
 	ctx.PrintPrimaryOutput("")
 }

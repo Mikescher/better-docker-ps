@@ -149,7 +149,7 @@ Available --format keys (default):
   {{.Command}}                       Quoted command
   {{.CreatedAt}}                     Time when the container was created.
   {{.RunningFor}}                    Elapsed time since the container was started.
-  {{.Ports}}                         Exposed ports.
+  {{.Ports}}                         Published ports. ([!] differs from docker CLI, these are only the published ports)
   {{.State}}                         Container status
   {{.Status}}                        Container status with details
   {{.Size}}                          Container disk size.
@@ -165,5 +165,8 @@ Available --format keys (extra | do not exist in `docker ps`):
   {{.ImageRegistry}}, {{.Registry}}  Image Registry
   {{.ShortCommand}}                  Command without arguments
   {{.LabelKeys}}                     All labels assigned to the container (keys only)
+  {{.ExposedPorts}}                  Exposed ports
+  {{.PublishedPorts}}                Published ports
+  {{.NotPublishedPorts}}             Exposed but not published ports
   {{.IP}}                            Internal IP Address
 ~~~~~~
