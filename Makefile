@@ -29,3 +29,19 @@ package:
 	_data/package-data/aur-git.sh
 	_data/package-data/aur-bin.sh
 	_data/package-data/homebrew.sh
+
+	echo ""
+	echo "[TODO]: call `make package-push-aur-git`"
+	echo "[TODO]: call `make package-push-aur-bin`"
+	echo "[TODO]: call `make package-push-homebrew`"
+	echo "[TODO]: create github release"
+	echo ""
+
+package-push-aur-git:
+	cd _out/dops-git && git push
+
+package-push-aur-bin:
+	cd _out/dops-bin && git push
+
+package-push-homebrew:
+	cd _out/homebrew-tap && git push
