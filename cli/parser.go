@@ -67,7 +67,7 @@ func parseCommandlineInternal() (Options, error) {
 			arg = arg[1:]
 
 			if len(arg) > 1 {
-				for i := 1; i < len(arg); i++ {
+				for i := 0; i < len(arg); i++ {
 					allOptionArguments = append(allOptionArguments, ArgumentTuple{Key: arg[i : i+1], Value: nil})
 				}
 				continue
