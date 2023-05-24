@@ -6,38 +6,50 @@ import (
 	"better-docker-ps/printer"
 	"fmt"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var ColumnMap = map[string]printer.ColFun{
-	"ID":                ColContainerID,
-	"Image":             ColFullImage,
-	"ImageName":         ColImage,
-	"ImageTag":          ColImageTag,
-	"Registry":          ColRegistry,
-	"ImageRegistry":     ColRegistry,
-	"Tag":               ColImageTag,
-	"Command":           ColCommand,
-	"ShortCommand":      ColShortCommand,
-	"CreatedAt":         ColCreatedAt,
-	"RunningFor":        ColRunningFor,
-	"Ports":             ColPortsPublished,
-	"PublishedPorts":    ColPortsPublished,
-	"ExposedPorts":      ColPortsExposed,
-	"NotPublishedPorts": ColPortsNotPublished,
-	"State":             ColState,
-	"Status":            ColStatus,
-	"Size":              ColSize,
-	"Names":             ColName,
-	"Labels":            ColLabels,
-	"LabelKeys":         ColLabelKeys,
-	"Mounts":            ColMounts,
-	"Networks":          ColNetworks,
-	"IP":                ColIP,
+var rexIP = rext.W(regexp.MustCompile("^(?P<b0>[0-9]{1,3})\\.(?P<b1>[0-9]{1,3})\\.(?P<b2>[0-9]{1,3})\\.(?P<b3>[0-9]{1,3})$"))
+
+type ColSortFun = func(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int
+
+type ColumnDef struct {
+	Reader printer.ColFun
+	Sorter ColSortFun
+}
+
+var ColumnMap = map[string]ColumnDef{
+	"ID":                {ColContainerID, SortContainerID},
+	"Image":             {ColFullImage, SortFullImage},
+	"ImageName":         {ColImage, SortImage},
+	"ImageTag":          {ColImageTag, SortImageTag},
+	"Registry":          {ColRegistry, SortRegistry},
+	"ImageRegistry":     {ColRegistry, SortRegistry},
+	"Tag":               {ColImageTag, SortImageTag},
+	"Command":           {ColCommand, SortCommand},
+	"ShortCommand":      {ColShortCommand, SortShortCommand},
+	"CreatedAt":         {ColCreatedAt, SortCreatedAt},
+	"RunningFor":        {ColRunningFor, SortRunningFor},
+	"Ports":             {ColPortsPublished, SortPortsPublished},
+	"PublishedPorts":    {ColPortsPublished, SortPortsPublished},
+	"ExposedPorts":      {ColPortsExposed, SortPortsExposed},
+	"NotPublishedPorts": {ColPortsNotPublished, SortPortsNotPublished},
+	"PublicPorts":       {ColPortsPublicPart, SortPortsPublicPart},
+	"State":             {ColState, SortState},
+	"Status":            {ColStatus, SortStatus},
+	"Size":              {ColSize, SortSize},
+	"Names":             {ColName, SortName},
+	"Labels":            {ColLabels, SortLabels},
+	"LabelKeys":         {ColLabelKeys, SortLabelKeys},
+	"Mounts":            {ColMounts, SortMounts},
+	"Networks":          {ColNetworks, SortNetworks},
+	"IP":                {ColIP, SortIP},
 }
 
 func ColContainerID(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
@@ -203,6 +215,27 @@ func ColPortsExposed(ctx *cli.PSContext, cont *docker.ContainerSchema) []string 
 	return r
 }
 
+func ColPortsPublicPart(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"EXPOSED PORTS"}
+	}
+
+	m := make(map[string]bool)
+	r := make([]string, 0)
+	for _, port := range cont.Ports {
+		if port.PublicPort != 0 {
+
+			str := fmt.Sprintf("%d", port.PublicPort)
+			if _, ok := m[str]; !ok {
+				m[str] = true
+				r = append(r, strconv.Itoa(port.PublicPort))
+			}
+		}
+	}
+
+	return r
+}
+
 func ColPortsPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"PUBLISHED PORTS"}
@@ -353,11 +386,278 @@ func ColPlaintext(str string) printer.ColFun {
 	}
 }
 
+// #####################################################################################################################
+
+func SortContainerID(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	if ctx.Opt.Truncate {
+		return langext.Compare(v1.ID[0:12], v2.ID[0:12])
+	} else {
+		return langext.Compare(v1.ID, v2.ID)
+	}
+}
+
+func SortFullImage(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	return langext.Compare(v1.Image, v2.Image)
+}
+
+func SortRegistry(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	reg1, _, _ := docker.SplitDockerImage(v1.Image)
+	reg2, _, _ := docker.SplitDockerImage(v2.Image)
+
+	return langext.Compare(reg1, reg2)
+}
+
+func SortImage(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	_, img1, _ := docker.SplitDockerImage(v1.Image)
+	_, img2, _ := docker.SplitDockerImage(v2.Image)
+
+	return langext.Compare(img1, img2)
+}
+
+func SortImageTag(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	_, _, tag1 := docker.SplitDockerImage(v1.Image)
+	_, _, tag2 := docker.SplitDockerImage(v2.Image)
+
+	return langext.Compare(tag1, tag2)
+}
+
+func SortCommand(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	return langext.Compare(v1.Command, v2.Command)
+}
+
+func SortShortCommand(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	spl1 := strings.Split(v1.Command, " ")
+	sc1 := ""
+	if len(spl1) > 0 {
+		sc1 = spl1[0]
+	}
+
+	spl2 := strings.Split(v2.Command, " ")
+	sc2 := ""
+	if len(spl2) > 0 {
+		sc2 = spl2[0]
+	}
+
+	return langext.Compare(sc1, sc2)
+}
+
+func SortRunningFor(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	return langext.Compare(v1.Created, v2.Created) * -1 // runnign for is 'now - created', so we need to invert the sort order
+}
+
+func SortCreatedAt(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	return langext.Compare(v1.Created, v2.Created)
+}
+
+func SortState(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	return langext.Compare(v1.State.Num(), v2.State.Num())
+}
+
+func SortStatus(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	return langext.Compare(v1.Status, v2.Status)
+}
+
+func SortPortsExposed(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	parr1 := langext.ArrCopy(v1.Ports)
+	parr2 := langext.ArrCopy(v2.Ports)
+
+	pl1 := langext.ArrMap(parr1, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+	pl2 := langext.ArrMap(parr2, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+
+	langext.SortStable(pl1)
+	langext.SortStable(pl2)
+
+	pstr1 := strings.Join(pl1, "\n")
+	pstr2 := strings.Join(pl2, "\n")
+
+	return langext.Compare(pstr1, pstr2)
+}
+
+func SortPortsPublished(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	parr1 := langext.ArrCopy(v1.Ports)
+	parr2 := langext.ArrCopy(v2.Ports)
+
+	parr1 = langext.ArrFilter(parr1, func(v docker.PortSchema) bool { return v.PublicPort != 0 })
+	parr2 = langext.ArrFilter(parr2, func(v docker.PortSchema) bool { return v.PublicPort != 0 })
+
+	pl1 := langext.ArrMap(parr1, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+	pl2 := langext.ArrMap(parr2, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+
+	langext.SortStable(pl1)
+	langext.SortStable(pl2)
+
+	pstr1 := strings.Join(pl1, "\n")
+	pstr2 := strings.Join(pl2, "\n")
+
+	return langext.Compare(pstr1, pstr2)
+}
+
+func SortPortsNotPublished(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	parr1 := langext.ArrCopy(v1.Ports)
+	parr2 := langext.ArrCopy(v2.Ports)
+
+	parr1 = langext.ArrFilter(parr1, func(v docker.PortSchema) bool { return v.PublicPort == 0 })
+	parr2 = langext.ArrFilter(parr2, func(v docker.PortSchema) bool { return v.PublicPort == 0 })
+
+	pl1 := langext.ArrMap(parr1, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+	pl2 := langext.ArrMap(parr2, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+
+	langext.SortStable(pl1)
+	langext.SortStable(pl2)
+
+	pstr1 := strings.Join(pl1, "\n")
+	pstr2 := strings.Join(pl2, "\n")
+
+	return langext.Compare(pstr1, pstr2)
+}
+
+func SortPortsPublicPart(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	parr1 := langext.ArrCopy(v1.Ports)
+	parr2 := langext.ArrCopy(v2.Ports)
+
+	parr1 = langext.ArrFilter(parr1, func(v docker.PortSchema) bool { return v.PublicPort != 0 })
+	parr2 = langext.ArrFilter(parr2, func(v docker.PortSchema) bool { return v.PublicPort != 0 })
+
+	pl1 := langext.ArrMap(parr1, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%08d", v.PublicPort)
+	})
+	pl2 := langext.ArrMap(parr2, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%08d", v.PublicPort)
+	})
+
+	langext.SortStable(pl1)
+	langext.SortStable(pl2)
+
+	pstr1 := strings.Join(pl1, ":")
+	pstr2 := strings.Join(pl2, ":")
+
+	return langext.Compare(pstr1, pstr2)
+}
+
+func SortName(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	names1 := langext.ArrCopy(v1.Names)
+	names2 := langext.ArrCopy(v2.Names)
+
+	langext.SortStable(names1)
+	langext.SortStable(names2)
+
+	return langext.CompareArr(names1, names2)
+}
+
+func SortSize(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	return langext.CompareArr([]int64{v1.SizeRw, v1.SizeRootFs}, []int64{v2.SizeRw, v2.SizeRootFs})
+}
+
+func SortMounts(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	mounts1 := langext.ArrMap(v1.Mounts, func(v docker.ContainerMount) string {
+		return fmt.Sprintf("%s\n%s", v.Source, v.Destination)
+	})
+	mounts2 := langext.ArrMap(v2.Mounts, func(v docker.ContainerMount) string {
+		return fmt.Sprintf("%s\n%s", v.Source, v.Destination)
+	})
+
+	langext.SortStable(mounts1)
+	langext.SortStable(mounts2)
+
+	return langext.CompareArr(mounts1, mounts2)
+}
+
+func SortIP(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	ips1 := langext.ArrMap(langext.MapToArr(v1.NetworkSettings.Networks), func(v langext.MapEntry[string, docker.ContainerSingleNetworkSettings]) string {
+		return v.Value.IPAddress
+	})
+	ips2 := langext.ArrMap(langext.MapToArr(v2.NetworkSettings.Networks), func(v langext.MapEntry[string, docker.ContainerSingleNetworkSettings]) string {
+		return v.Value.IPAddress
+	})
+
+	ips1 = langext.ArrFilter(ips1, func(v string) bool {
+		return v != ""
+	})
+	ips2 = langext.ArrFilter(ips2, func(v string) bool {
+		return v != ""
+	})
+
+	ips1 = langext.ArrMap(ips1, func(v string) string {
+		return ipExpand(v)
+	})
+	ips2 = langext.ArrMap(ips2, func(v string) string {
+		return ipExpand(v)
+	})
+
+	langext.SortStable(ips1)
+	langext.SortStable(ips2)
+
+	return langext.CompareArr(ips1, ips2)
+}
+
+func SortLabels(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	lbls1 := langext.ArrMap(langext.MapToArr(v1.Labels), func(v langext.MapEntry[string, string]) string {
+		return fmt.Sprintf("%s\n%s", v.Key, v.Value)
+	})
+	lbls2 := langext.ArrMap(langext.MapToArr(v2.Labels), func(v langext.MapEntry[string, string]) string {
+		return fmt.Sprintf("%s\t%s", v.Key, v.Value)
+	})
+
+	langext.SortStable(lbls1)
+	langext.SortStable(lbls2)
+
+	return langext.CompareArr(lbls1, lbls2)
+}
+
+func SortLabelKeys(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	lbls1 := langext.ArrMap(langext.MapToArr(v1.Labels), func(v langext.MapEntry[string, string]) string {
+		return v.Key
+	})
+	lbls2 := langext.ArrMap(langext.MapToArr(v2.Labels), func(v langext.MapEntry[string, string]) string {
+		return v.Key
+	})
+
+	langext.SortStable(lbls1)
+	langext.SortStable(lbls2)
+
+	return langext.CompareArr(lbls1, lbls2)
+}
+
+func SortNetworks(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	ntwrk1 := langext.ArrMap(langext.MapToArr(v1.NetworkSettings.Networks), func(v langext.MapEntry[string, docker.ContainerSingleNetworkSettings]) string {
+		return v.Key
+	})
+	ntwrk2 := langext.ArrMap(langext.MapToArr(v2.NetworkSettings.Networks), func(v langext.MapEntry[string, docker.ContainerSingleNetworkSettings]) string {
+		return v.Key
+	})
+
+	langext.SortStable(ntwrk1)
+	langext.SortStable(ntwrk2)
+
+	return langext.CompareArr(ntwrk1, ntwrk2)
+}
+
+// #####################################################################################################################
+
 func getColFun(colkey string) (printer.ColFun, bool) {
 	for k, v := range ColumnMap {
 		if "{{."+k+"}}" == colkey {
-			return v, true
+			return v.Reader, true
 		}
+	}
+	return nil, false
+}
+
+func getSortFun(colkey string) (ColSortFun, bool) {
+	if cdef, ok := ColumnMap[colkey]; ok {
+		return cdef.Sorter, true
 	}
 	return nil, false
 }
@@ -367,7 +667,7 @@ func replaceSingleLineColumnData(ctx *cli.PSContext, data docker.ContainerSchema
 	r := format
 
 	for k, v := range ColumnMap {
-		r = strings.ReplaceAll(r, "{{."+k+"}}", strings.Join(v(ctx, &data), " "))
+		r = strings.ReplaceAll(r, "{{."+k+"}}", strings.Join(v.Reader(ctx, &data), " "))
 	}
 
 	return r
@@ -426,4 +726,15 @@ func statusColor(status string, value string) string {
 	}
 
 	return value
+}
+
+func ipExpand(ip string) string {
+	if match, ok := rexIP.MatchFirst(ip); ok {
+		return fmt.Sprintf("%03s.%03s.%03s.%03s",
+			match.GroupByName("b0").Value(),
+			match.GroupByName("b1").Value(),
+			match.GroupByName("b2").Value(),
+			match.GroupByName("b3").Value())
+	}
+	return ip
 }

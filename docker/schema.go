@@ -64,3 +64,22 @@ const (
 	StatePaused     ContainerState = "paused"
 	StateDead       ContainerState = "dead"
 )
+
+func (ct ContainerState) Num() int {
+	switch ct {
+	case StateCreated:
+		return 0
+	case StateRunning:
+		return 1
+	case StateRestarting:
+		return 2
+	case StateExited:
+		return 3
+	case StatePaused:
+		return 4
+	case StateDead:
+		return 5
+	default:
+		return 999
+	}
+}

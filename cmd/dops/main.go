@@ -6,6 +6,7 @@ import (
 	"better-docker-ps/impl"
 	"better-docker-ps/pserr"
 	"fmt"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"os"
 	"runtime/debug"
 )
@@ -20,7 +21,7 @@ func main() {
 		}
 	}()
 
-	opt, err := cli.ParseCommandline()
+	opt, err := cli.ParseCommandline(langext.MapKeyArr(impl.ColumnMap))
 	if err != nil {
 		ctx := cli.NewEarlyContext()
 		ctx.PrintFatalError(err)
@@ -113,6 +114,7 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  {{.ExposedPorts}}                  Exposed ports")
 	ctx.PrintPrimaryOutput("  {{.NotPublishedPorts}}             Exposed but not published ports")
 	ctx.PrintPrimaryOutput("  {{.PublishedPorts}}                Published ports")
+	ctx.PrintPrimaryOutput("  {{.PublicPorts}}                   Only the public part of published ports")
 	ctx.PrintPrimaryOutput("  {{.IP}                             Internal IP Address")
 	ctx.PrintPrimaryOutput("")
 }

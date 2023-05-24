@@ -6,11 +6,11 @@ import (
 	"better-docker-ps/printer"
 	"better-docker-ps/pserr"
 	"encoding/json"
-	"os"
-	"strings"
-
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
 	"golang.org/x/term"
+	"os"
+	"strings"
 )
 
 func Execute(ctx *cli.PSContext) error {
@@ -31,6 +31,10 @@ func Execute(ctx *cli.PSContext) error {
 		return pserr.DirectOutput.Wrap(err, "Failed to decode Docker API response")
 	}
 
+	if len(ctx.Opt.SortColumns) > 0 {
+		data = doSort(ctx, data, ctx.Opt.SortColumns, ctx.Opt.SortDirection)
+	}
+
 	for i, v := range ctx.Opt.Format {
 
 		ok, err := doOutput(ctx, data, v, i == len(ctx.Opt.Format)-1)
@@ -44,6 +48,37 @@ func Execute(ctx *cli.PSContext) error {
 	}
 
 	return pserr.DirectOutput.New("Missing format specification for output")
+}
+
+func doSort(ctx *cli.PSContext, data []docker.ContainerSchema, skeys []string, sdirs []cli.SortDirection) []docker.ContainerSchema {
+
+	langext.SortSliceStable(data, func(v1, v2 docker.ContainerSchema) bool {
+
+		// return true if v1 < v2
+
+		for i := 0; i < len(skeys); i++ {
+
+			sfn, ok := getSortFun(skeys[i])
+			if !ok {
+				continue
+			}
+
+			cmp := sfn(ctx, &v1, &v2)
+			if sdirs[i] == "DESC" {
+				cmp = cmp * -1
+			}
+
+			if cmp < 0 {
+				return true
+			} else if cmp > 0 {
+				return false
+			}
+		}
+
+		return false // equals
+	})
+
+	return data
 }
 
 func doOutput(ctx *cli.PSContext, data []docker.ContainerSchema, format string, force bool) (bool, error) {

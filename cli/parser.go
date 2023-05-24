@@ -2,6 +2,7 @@ package cli
 
 import (
 	"better-docker-ps/pserr"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -11,18 +12,20 @@ import (
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 )
 
-func ParseCommandline() (Options, error) {
-	o, err := parseCommandlineInternal()
+func ParseCommandline(columnKeys []string) (Options, error) {
+	o, err := parseCommandlineInternal(columnKeys)
 	if err != nil {
 		return Options{}, errorx.Decorate(err, "failed to parse commandline")
 	}
 	return o, nil
 }
 
-func parseCommandlineInternal() (Options, error) {
+func parseCommandlineInternal(columnKeys []string) (Options, error) {
 	unprocessedArgs := os.Args[1:]
 
 	allOptionArguments := make([]ArgumentTuple, 0)
+
+	// Parse Commandline KeyValue pairs
 
 	for len(unprocessedArgs) > 0 {
 		arg := unprocessedArgs[0]
@@ -234,7 +237,46 @@ func parseCommandlineInternal() (Options, error) {
 			continue
 		}
 
+		if arg.Key == "sort" && arg.Value != nil {
+			opt.SortColumns = strings.Split(*arg.Value, ",")
+			continue
+		}
+
+		if arg.Key == "sort-direction" && arg.Value != nil {
+			opt.SortDirection = make([]SortDirection, 0)
+			for _, sdv := range strings.Split(*arg.Value, ",") {
+				if strings.ToUpper(sdv) == "ASC" {
+					opt.SortDirection = append(opt.SortDirection, SortASC)
+					continue
+				}
+				if strings.ToUpper(sdv) == "DESC" {
+					opt.SortDirection = append(opt.SortDirection, SortDESC)
+					continue
+				}
+				return Options{}, pserr.DirectOutput.New(fmt.Sprintf("Failed to parse sort-direction argument '%s'", sdv))
+			}
+			continue
+		}
+
 		return Options{}, pserr.DirectOutput.New("Unknown argument: " + arg.Key)
+	}
+
+	// Post Processing
+
+	if len(opt.SortDirection) == 0 && len(opt.SortColumns) > 0 {
+		for i := 0; i < len(opt.SortColumns); i++ {
+			opt.SortDirection = append(opt.SortDirection, SortASC) // default sort (if not specified) is ASC on all sort columns
+		}
+	}
+
+	if len(opt.SortDirection) != len(opt.SortColumns) {
+		return Options{}, pserr.DirectOutput.New(fmt.Sprintf("Must specify the same number of values in --sort and --sort-direction ( %d <> %d )", len(opt.SortDirection), len(opt.SortColumns)))
+	}
+
+	for _, colkey := range opt.SortColumns {
+		if !langext.InArray(colkey, columnKeys) {
+			return Options{}, pserr.DirectOutput.New(fmt.Sprintf("Unknown column : '%s' in --sort", colkey))
+		}
 	}
 
 	return opt, nil

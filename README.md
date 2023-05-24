@@ -107,6 +107,11 @@ $ ./dops --format "idlist"
 $ ./dops --format "table {{.ID}}\\t{{.Names}}\\t{{.State}}"  --format "table {{.ID}}\\t{{.Names}}" --format "table {{.ID}}"
 
 $ ./dops --format "ID: {{.ID}}; Name: {{.Names}}"
+
+$ ./dops -aq
+
+$ ./dops --sort "IP" --sort-direction "ASC"
+
 ~~~~
 
 
@@ -142,6 +147,8 @@ Options (extra | do not exist in `docker ps`):
   --no-header                        Do not print the table header
   --simple-header                    Do not print the lines under the header
   --format <fmt>                     You can specify multiple formats and the first one that fits your terminal widt will be used
+  --sort <col>                       Sort output by a specific column, use the same identifier as in --format, only useful together with table formats 
+  --sort-direction <ASC|DESC>        The sort direction, only useful in combination with --sort
 
 Available --format keys (default):
   {{.ID}}                            Container ID
@@ -168,5 +175,6 @@ Available --format keys (extra | do not exist in `docker ps`):
   {{.ExposedPorts}}                  Exposed ports
   {{.PublishedPorts}}                Published ports
   {{.NotPublishedPorts}}             Exposed but not published ports
+  {{.PublicPorts}}                   Only the public part of published ports
   {{.IP}}                            Internal IP Address
 ~~~~~~

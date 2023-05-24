@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+type SortDirection string
+
+const (
+	SortASC  SortDirection = "ASC"
+	SortDESC SortDirection = "DESC"
+)
+
 type Options struct {
 	Version          bool
 	Help             bool
@@ -25,6 +32,8 @@ type Options struct {
 	PrintHeader      bool
 	PrintHeaderLines bool
 	Truncate         bool
+	SortColumns      []string
+	SortDirection    []SortDirection
 }
 
 func DefaultCLIOptions() Options {
@@ -60,5 +69,7 @@ func DefaultCLIOptions() Options {
 		PrintHeader:      true,
 		PrintHeaderLines: true,
 		Truncate:         true,
+		SortColumns:      make([]string, 0),
+		SortDirection:    make([]SortDirection, 0),
 	}
 }
