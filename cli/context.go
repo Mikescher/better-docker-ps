@@ -102,6 +102,10 @@ func (c PSContext) PrintVerboseKV(key string, vval any) {
 	}
 }
 
+func (c PSContext) ClearTerminal() {
+	fmt.Print("\033[H\033[2J")
+}
+
 func (c PSContext) printPrimaryRaw(msg string) {
 	if c.Opt.Quiet {
 		return

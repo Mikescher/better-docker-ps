@@ -8,7 +8,13 @@ github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.122 h1:UDEL6W2VP5SbOWb/tyKcA2DWSTpGD/2sPpMxponyTLU=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.122/go.mod h1:w8JlyUHpoOJmW5GxsiheZkFh3vn8Mp80ynSVOFLszL0=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.162 h1:asZ9itoyVE2qPmTp42nFQcagpbMeeUZzp5elXRmIDAw=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.162/go.mod h1:bIcO9mw2CD03pmJcBaE5YCF6etG5u73OVkUa8Alx3D0=
 golang.org/x/sys v0.3.0 h1:w8ZOecv6NaNa/zC8944JTU3vz4u6Lagfk4RPQxv92NQ=
 golang.org/x/sys v0.3.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.8.0 h1:EBmGv8NaZBZTWvrbjNoL6HVt+IVy3QDQpJs7VRIw3tU=
+golang.org/x/sys v0.8.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.3.0 h1:qoo4akIqOcDME5bhc/NgxUdovd6BSS2uMsVjB56q1xI=
 golang.org/x/term v0.3.0/go.mod h1:q750SLmJuPmVoN1blW3UFBPREJfb1KmY3vwxfr+nFDA=
+golang.org/x/term v0.8.0 h1:n5xxQn2i3PC0yLAbjTpNT85q/Kgzcr2gIoX9OrJUols=
+golang.org/x/term v0.8.0/go.mod h1:xPskH00ivmX89bAKVGSKKtLOWNx2+17Eiy94tnKShWo=

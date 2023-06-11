@@ -16,7 +16,8 @@ It does not look like we will get a better output in the foreseeable future (see
  - Write multi-value data (like multiple port mappings, multiple networks, etc.) into multiple lines instead of concatenating them.
  - Add color to the STATE and STATUS column (green / yellow / red).
  - Automatically remove columns in the output until it fits in the current terminal width.
-
+ - sort the output with the `--sort` argument
+ - Enter watch mode with the `--watch` argument
 
 More Changes from default docker-ps:
  - Show (by default) the container-cmd without arguments.
@@ -149,6 +150,7 @@ Options (extra | do not exist in `docker ps`):
   --format <fmt>                     You can specify multiple formats and the first one that fits your terminal widt will be used
   --sort <col>                       Sort output by a specific column, use the same identifier as in --format, only useful together with table formats 
   --sort-direction <ASC|DESC>        The sort direction, only useful in combination with --sort
+  --watch <interval>, -w <interval>  Automatically refresh output periodically (interval is optional, default: 2s) 
 
 Available --format keys (default):
   {{.ID}}                            Container ID

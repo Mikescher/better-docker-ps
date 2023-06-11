@@ -50,14 +50,30 @@ func main() {
 		return
 	}
 
-	err = impl.Execute(ctx)
-	if err != nil {
-		ctx.PrintFatalError(err)
-		os.Exit(pserr.GetExitCode(err, consts.ExitcodeError))
-		return
+	if opt.WatchInterval == nil {
+
+		err = impl.Execute(ctx)
+		if err != nil {
+			ctx.PrintFatalError(err)
+			os.Exit(pserr.GetExitCode(err, consts.ExitcodeError))
+			return
+		}
+
+		os.Exit(0)
+
+	} else {
+
+		err = impl.Watch(ctx, *opt.WatchInterval)
+		if err != nil {
+			ctx.PrintFatalError(err)
+			os.Exit(pserr.GetExitCode(err, consts.ExitcodeError))
+			return
+		}
+
+		os.Exit(0)
+
 	}
 
-	os.Exit(0)
 }
 
 func printHelp(ctx *cli.PSContext) {
@@ -88,6 +104,7 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  --no-header                        Do not print the table header")
 	ctx.PrintPrimaryOutput("  --simple-header                    Do not print the lines under the header")
 	ctx.PrintPrimaryOutput("  --format <fmt>                     You can specify multiple formats and the first one that fits your terminal widt will be used")
+	ctx.PrintPrimaryOutput("  --watch <interval>                 Automatically refresh output periodically (interval is optional, default: 2s)")
 	ctx.PrintPrimaryOutput("")
 	ctx.PrintPrimaryOutput("Available --format keys (default):")
 	ctx.PrintPrimaryOutput("  {{.ID}}                            Container ID")

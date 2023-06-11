@@ -8,12 +8,42 @@ import (
 	"encoding/json"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
+	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
 	"golang.org/x/term"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 )
 
 func Execute(ctx *cli.PSContext) error {
+	return executeSingle(ctx, false)
+}
+
+func Watch(ctx *cli.PSContext, d time.Duration) error {
+
+	sigTermChannel := make(chan os.Signal, 8)
+	signal.Notify(sigTermChannel, os.Interrupt, syscall.SIGTERM)
+
+	for {
+
+		err := executeSingle(ctx, true)
+		if err != nil {
+			return err
+		}
+
+		_, isSig := syncext.ReadChannelWithTimeout(sigTermChannel, d)
+		if isSig {
+			ctx.PrintPrimaryOutput("")
+			ctx.PrintPrimaryOutput("Watch canceled with Ctrl+C")
+			return nil
+		}
+
+	}
+}
+
+func executeSingle(ctx *cli.PSContext, clear bool) error {
 	for _, fmt := range ctx.Opt.Format {
 		if strings.Contains(fmt, "{{.Size}}") {
 			ctx.Opt.WithSize = true
@@ -36,6 +66,10 @@ func Execute(ctx *cli.PSContext) error {
 	}
 
 	for i, v := range ctx.Opt.Format {
+
+		if clear {
+			ctx.ClearTerminal()
+		}
 
 		ok, err := doOutput(ctx, data, v, i == len(ctx.Opt.Format)-1)
 		if err != nil {

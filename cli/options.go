@@ -34,6 +34,7 @@ type Options struct {
 	Truncate         bool
 	SortColumns      []string
 	SortDirection    []SortDirection
+	WatchInterval    *time.Duration
 }
 
 func DefaultCLIOptions() Options {
@@ -71,5 +72,6 @@ func DefaultCLIOptions() Options {
 		Truncate:         true,
 		SortColumns:      make([]string, 0),
 		SortDirection:    make([]SortDirection, 0),
+		WatchInterval:    nil,
 	}
 }

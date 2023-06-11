@@ -3,6 +3,7 @@ package cli
 import (
 	"better-docker-ps/pserr"
 	"fmt"
+	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"os"
 	"strconv"
 	"strings"
@@ -255,6 +256,15 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 				}
 				return Options{}, pserr.DirectOutput.New(fmt.Sprintf("Failed to parse sort-direction argument '%s'", sdv))
 			}
+			continue
+		}
+
+		if arg.Key == "watch" || arg.Key == "w" {
+			d, err := timeext.ParseDurationShortString(langext.Coalesce(arg.Value, "2s"))
+			if err != nil {
+				return Options{}, pserr.DirectOutput.New("Failed to parse duration argument of '--watch': '" + *arg.Value + "'")
+			}
+			opt.WatchInterval = &d
 			continue
 		}
 
