@@ -128,6 +128,7 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  {{.ImageRegistry}, {{.Registry}    Image Registry")
 	ctx.PrintPrimaryOutput("  {{.ShortCommand}                   Command without arguments")
 	ctx.PrintPrimaryOutput("  {{.LabelKeys}                      All labels assigned to the container (keys only)")
+	ctx.PrintPrimaryOutput("  {{.ShortPublishedPorts}}           Published ports, shorter output than {{.Ports}}")
 	ctx.PrintPrimaryOutput("  {{.ExposedPorts}}                  Exposed ports")
 	ctx.PrintPrimaryOutput("  {{.NotPublishedPorts}}             Exposed but not published ports")
 	ctx.PrintPrimaryOutput("  {{.PublishedPorts}}                Published ports")

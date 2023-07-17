@@ -55,6 +55,8 @@ func executeSingle(ctx *cli.PSContext, clear bool) error {
 		return err
 	}
 
+	ctx.PrintVerboseKV("API response", langext.TryPrettyPrintJson(string(jsonraw)))
+
 	var data []docker.ContainerSchema
 	err = json.Unmarshal(jsonraw, &data)
 	if err != nil {

@@ -25,31 +25,32 @@ type ColumnDef struct {
 }
 
 var ColumnMap = map[string]ColumnDef{
-	"ID":                {ColContainerID, SortContainerID},
-	"Image":             {ColFullImage, SortFullImage},
-	"ImageName":         {ColImage, SortImage},
-	"ImageTag":          {ColImageTag, SortImageTag},
-	"Registry":          {ColRegistry, SortRegistry},
-	"ImageRegistry":     {ColRegistry, SortRegistry},
-	"Tag":               {ColImageTag, SortImageTag},
-	"Command":           {ColCommand, SortCommand},
-	"ShortCommand":      {ColShortCommand, SortShortCommand},
-	"CreatedAt":         {ColCreatedAt, SortCreatedAt},
-	"RunningFor":        {ColRunningFor, SortRunningFor},
-	"Ports":             {ColPortsPublished, SortPortsPublished},
-	"PublishedPorts":    {ColPortsPublished, SortPortsPublished},
-	"ExposedPorts":      {ColPortsExposed, SortPortsExposed},
-	"NotPublishedPorts": {ColPortsNotPublished, SortPortsNotPublished},
-	"PublicPorts":       {ColPortsPublicPart, SortPortsPublicPart},
-	"State":             {ColState, SortState},
-	"Status":            {ColStatus, SortStatus},
-	"Size":              {ColSize, SortSize},
-	"Names":             {ColName, SortName},
-	"Labels":            {ColLabels, SortLabels},
-	"LabelKeys":         {ColLabelKeys, SortLabelKeys},
-	"Mounts":            {ColMounts, SortMounts},
-	"Networks":          {ColNetworks, SortNetworks},
-	"IP":                {ColIP, SortIP},
+	"ID":                  {ColContainerID, SortContainerID},
+	"Image":               {ColFullImage, SortFullImage},
+	"ImageName":           {ColImage, SortImage},
+	"ImageTag":            {ColImageTag, SortImageTag},
+	"Registry":            {ColRegistry, SortRegistry},
+	"ImageRegistry":       {ColRegistry, SortRegistry},
+	"Tag":                 {ColImageTag, SortImageTag},
+	"Command":             {ColCommand, SortCommand},
+	"ShortCommand":        {ColShortCommand, SortShortCommand},
+	"CreatedAt":           {ColCreatedAt, SortCreatedAt},
+	"RunningFor":          {ColRunningFor, SortRunningFor},
+	"Ports":               {ColPortsPublished, SortPortsPublished},
+	"PublishedPorts":      {ColPortsPublished, SortPortsPublished},
+	"ShortPublishedPorts": {ColPortsPublishedShort, SortPortsPublishedShort},
+	"ExposedPorts":        {ColPortsExposed, SortPortsExposed},
+	"NotPublishedPorts":   {ColPortsNotPublished, SortPortsNotPublished},
+	"PublicPorts":         {ColPortsPublicPart, SortPortsPublicPart},
+	"State":               {ColState, SortState},
+	"Status":              {ColStatus, SortStatus},
+	"Size":                {ColSize, SortSize},
+	"Names":               {ColName, SortName},
+	"Labels":              {ColLabels, SortLabels},
+	"LabelKeys":           {ColLabelKeys, SortLabelKeys},
+	"Mounts":              {ColMounts, SortMounts},
+	"Networks":            {ColNetworks, SortNetworks},
+	"IP":                  {ColIP, SortIP},
 }
 
 func ColContainerID(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
@@ -224,7 +225,6 @@ func ColPortsPublicPart(ctx *cli.PSContext, cont *docker.ContainerSchema) []stri
 	r := make([]string, 0)
 	for _, port := range cont.PortsSorted() {
 		if port.PublicPort != 0 {
-
 			str := fmt.Sprintf("%d", port.PublicPort)
 			if _, ok := m[str]; !ok {
 				m[str] = true
@@ -249,6 +249,32 @@ func ColPortsPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []strin
 
 		if port.PublicPort != 0 {
 			str := fmt.Sprintf("%s -> %s / %s", p1, p2, port.Type)
+			if port.IsLoopback() {
+				str += " (loc)"
+			}
+			if _, ok := m[str]; !ok {
+				m[str] = true
+				r = append(r, str)
+			}
+		}
+	}
+
+	return r
+}
+
+func ColPortsPublishedShort(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"PUBLISHED PORTS"}
+	}
+
+	m := make(map[string]bool)
+	r := make([]string, 0)
+	for _, port := range cont.PortsSorted() {
+		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", 5)
+		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
+
+		if port.PublicPort != 0 {
+			str := fmt.Sprintf("%s -> %s", p1, p2)
 			if _, ok := m[str]; !ok {
 				m[str] = true
 				r = append(r, str)
@@ -266,7 +292,7 @@ func ColPortsNotPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []st
 
 	m := make(map[string]bool)
 	r := make([]string, 0)
-	for _, port := range cont.Ports {
+	for _, port := range cont.PortsSorted() {
 		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
 
 		if port.PublicPort == 0 {
@@ -478,6 +504,29 @@ func SortPortsExposed(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker
 }
 
 func SortPortsPublished(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	parr1 := langext.ArrCopy(v1.Ports)
+	parr2 := langext.ArrCopy(v2.Ports)
+
+	parr1 = langext.ArrFilter(parr1, func(v docker.PortSchema) bool { return v.PublicPort != 0 })
+	parr2 = langext.ArrFilter(parr2, func(v docker.PortSchema) bool { return v.PublicPort != 0 })
+
+	pl1 := langext.ArrMap(parr1, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+	pl2 := langext.ArrMap(parr2, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+
+	langext.SortStable(pl1)
+	langext.SortStable(pl2)
+
+	pstr1 := strings.Join(pl1, "\n")
+	pstr2 := strings.Join(pl2, "\n")
+
+	return langext.Compare(pstr1, pstr2)
+}
+
+func SortPortsPublishedShort(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
 	parr1 := langext.ArrCopy(v1.Ports)
 	parr2 := langext.ArrCopy(v2.Ports)
 

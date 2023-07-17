@@ -174,6 +174,7 @@ Available --format keys (extra | do not exist in `docker ps`):
   {{.ImageRegistry}}, {{.Registry}}  Image Registry
   {{.ShortCommand}}                  Command without arguments
   {{.LabelKeys}}                     All labels assigned to the container (keys only)
+  {{.ShortPublishedPorts}}           Published ports, shorter output than {{.Ports}}
   {{.ExposedPorts}}                  Exposed ports
   {{.PublishedPorts}}                Published ports
   {{.NotPublishedPorts}}             Exposed but not published ports

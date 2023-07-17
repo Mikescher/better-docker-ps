@@ -1,5 +1,10 @@
 package docker
 
+import (
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"net"
+)
+
 type ContainerSchema struct {
 	ID              string                   `json:"Id"`
 	Names           []string                 `json:"Names"`
@@ -58,6 +63,11 @@ type PortSchema struct {
 	PrivatePort int    `json:"PrivatePort"`
 	PublicPort  int    `json:"PublicPort"`
 	Type        string `json:"Type"`
+}
+
+func (s PortSchema) IsLoopback() bool {
+	ip := net.ParseIP(s.IP)
+	return ip != nil && ip.IsLoopback()
 }
 
 type ContainerMount struct {
