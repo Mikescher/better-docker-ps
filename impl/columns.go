@@ -80,7 +80,7 @@ func ColRegistry(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *doc
 		return []string{"REGISTRY"}
 	}
 
-	v, _, _ := docker.SplitDockerImage(cont.Image)
+	v, _, _ := docker.SplitDockerImage(ctx, cont.Image)
 
 	return []string{v}
 }
@@ -90,7 +90,7 @@ func ColImage(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker
 		return []string{"IMAGE"}
 	}
 
-	_, v, _ := docker.SplitDockerImage(cont.Image)
+	_, v, _ := docker.SplitDockerImage(ctx, cont.Image)
 
 	return []string{v}
 }
@@ -100,7 +100,7 @@ func ColImageTag(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *doc
 		return []string{"TAG"}
 	}
 
-	_, _, v := docker.SplitDockerImage(cont.Image)
+	_, _, v := docker.SplitDockerImage(ctx, cont.Image)
 
 	return []string{v}
 }
@@ -523,22 +523,22 @@ func SortFullImage(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.Co
 }
 
 func SortRegistry(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
-	reg1, _, _ := docker.SplitDockerImage(v1.Image)
-	reg2, _, _ := docker.SplitDockerImage(v2.Image)
+	reg1, _, _ := docker.SplitDockerImage(ctx, v1.Image)
+	reg2, _, _ := docker.SplitDockerImage(ctx, v2.Image)
 
 	return langext.Compare(reg1, reg2)
 }
 
 func SortImage(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
-	_, img1, _ := docker.SplitDockerImage(v1.Image)
-	_, img2, _ := docker.SplitDockerImage(v2.Image)
+	_, img1, _ := docker.SplitDockerImage(ctx, v1.Image)
+	_, img2, _ := docker.SplitDockerImage(ctx, v2.Image)
 
 	return langext.Compare(img1, img2)
 }
 
 func SortImageTag(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
-	_, _, tag1 := docker.SplitDockerImage(v1.Image)
-	_, _, tag2 := docker.SplitDockerImage(v2.Image)
+	_, _, tag1 := docker.SplitDockerImage(ctx, v1.Image)
+	_, _, tag2 := docker.SplitDockerImage(ctx, v2.Image)
 
 	return langext.Compare(tag1, tag2)
 }

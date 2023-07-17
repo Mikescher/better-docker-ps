@@ -134,7 +134,7 @@ Options (default):
   --format <fmt>                     Pretty-print containers using a Go template
   --last , -n                        Show n last created containers (includes all states)
   --latest , -l                      Show the latest created container (includes all states)
-  --no-trunc                         Don't truncate output
+  --no-trunc                         Don't truncate output (eg ContainerIDs, Sha256 Image references, commandline)
   --quiet , -q                       Only display container IDs
   --size , -s                        Display total file sizes
 

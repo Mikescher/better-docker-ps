@@ -1,6 +1,9 @@
 package docker
 
-import "strings"
+import (
+	"better-docker-ps/cli"
+	"strings"
+)
 
 var registryPrefixList = []string{
 	".com",
@@ -10,7 +13,7 @@ var registryPrefixList = []string{
 	".org",
 }
 
-func SplitDockerImage(img string) (string, string, string) {
+func SplitDockerImage(ctx *cli.PSContext, img string) (string, string, string) {
 
 	resultRegistry := ""
 	resultImage := ""
@@ -41,6 +44,11 @@ func SplitDockerImage(img string) (string, string, string) {
 	}
 
 	resultImage = img
+
+	if resultImage == "sha256" && len(resultTag) == 64 && ctx.Opt.Truncate {
+		resultImage = "(sha256)"
+		resultTag = resultTag[0:12] + "..."
+	}
 
 	return resultRegistry, resultImage, resultTag
 

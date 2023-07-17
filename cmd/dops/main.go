@@ -90,7 +90,7 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  --format <fmt>                     Pretty-print containers using a Go template")
 	ctx.PrintPrimaryOutput("  --last , -n                        Show n last created containers (includes all states)")
 	ctx.PrintPrimaryOutput("  --latest , -l                      Show the latest created container (includes all states)")
-	ctx.PrintPrimaryOutput("  --no-trunc                         Don't truncate output")
+	ctx.PrintPrimaryOutput("  --no-trunc                         Don't truncate output (eg ContainerIDs, Sha256 Image references, commandline)")
 	ctx.PrintPrimaryOutput("  --quiet , -q                       Only display container IDs")
 	ctx.PrintPrimaryOutput("  --size , -s                        Display total file sizes")
 	ctx.PrintPrimaryOutput("")
