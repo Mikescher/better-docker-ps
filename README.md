@@ -175,6 +175,7 @@ Available --format keys (extra | do not exist in `docker ps`):
   {{.ShortCommand}}                  Command without arguments
   {{.LabelKeys}}                     All labels assigned to the container (keys only)
   {{.ShortPublishedPorts}}           Published ports, shorter output than {{.Ports}}
+  {{.LongPublishedPorts}}            Published ports, full output with IP
   {{.ExposedPorts}}                  Exposed ports
   {{.PublishedPorts}}                Published ports
   {{.NotPublishedPorts}}             Exposed but not published ports

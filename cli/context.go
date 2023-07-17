@@ -15,7 +15,8 @@ import (
 
 type PSContext struct {
 	context.Context
-	Opt Options
+	Opt   Options
+	Cache map[string]any
 }
 
 func (c PSContext) PrintPrimaryOutput(msg string) {
@@ -156,6 +157,7 @@ func NewContext(opt Options) (*PSContext, error) {
 	return &PSContext{
 		Context: context.Background(),
 		Opt:     opt,
+		Cache:   make(map[string]any),
 	}, nil
 }
 
@@ -163,9 +165,23 @@ func NewEarlyContext() *PSContext {
 	return &PSContext{
 		Context: context.Background(),
 		Opt:     DefaultCLIOptions(),
+		Cache:   make(map[string]any),
 	}
 }
 
 func (c PSContext) Finish() {
 	// ...
+}
+
+func (c *PSContext) GetIntFromCache(key string, calc func() int) int {
+	if v1, ok := c.Cache[key]; ok {
+		if v2, ok := v1.(int); ok {
+			return v2
+		}
+		panic(fmt.Sprintf("Wrong type in cache type(%s) = %T  (expected: int)", key, v1))
+	}
+
+	val := calc()
+	c.Cache[key] = val
+	return val
 }

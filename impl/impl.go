@@ -150,7 +150,7 @@ func doOutput(ctx *cli.PSContext, data []docker.ContainerSchema, format string, 
 		outWidth := 0
 
 		for _, v := range data {
-			str := replaceSingleLineColumnData(ctx, v, format)
+			str := replaceSingleLineColumnData(ctx, data, v, format)
 			lines = append(lines, str)
 			outWidth = mathext.Max(outWidth, printer.RealStrLen(str))
 		}

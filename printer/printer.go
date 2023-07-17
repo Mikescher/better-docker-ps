@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type ColFun = func(ctx *cli.PSContext, cont *docker.ContainerSchema) []string
+type ColFun = func(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string
 
 func Width(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) int {
 	var cells = make([][]string, 0)
@@ -17,7 +17,7 @@ func Width(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) int
 		row := make([]string, 0)
 
 		for _, fn := range cols {
-			h := fn(ctx, nil)
+			h := fn(ctx, data, nil)
 			row = append(row, h[0])
 		}
 
@@ -29,7 +29,7 @@ func Width(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) int
 
 		maxheight := 1
 		for _, fn := range cols {
-			h := fn(ctx, &dat)
+			h := fn(ctx, data, &dat)
 			extrow = append(extrow, h)
 			maxheight = mathext.Max(maxheight, len(h))
 		}
@@ -69,7 +69,7 @@ func Print(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) {
 		row := make([]string, 0)
 
 		for _, fn := range cols {
-			h := fn(ctx, nil)
+			h := fn(ctx, data, nil)
 			row = append(row, h[0])
 		}
 
@@ -81,7 +81,7 @@ func Print(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) {
 
 		maxheight := 1
 		for _, fn := range cols {
-			h := fn(ctx, &dat)
+			h := fn(ctx, data, &dat)
 			extrow = append(extrow, h)
 			maxheight = mathext.Max(maxheight, len(h))
 		}

@@ -6,6 +6,7 @@ import (
 	"better-docker-ps/printer"
 	"fmt"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
 	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
@@ -39,6 +40,7 @@ var ColumnMap = map[string]ColumnDef{
 	"Ports":               {ColPortsPublished, SortPortsPublished},
 	"PublishedPorts":      {ColPortsPublished, SortPortsPublished},
 	"ShortPublishedPorts": {ColPortsPublishedShort, SortPortsPublishedShort},
+	"LongPublishedPorts":  {ColPortsPublishedLong, SortPortsPublishedLong},
 	"ExposedPorts":        {ColPortsExposed, SortPortsExposed},
 	"NotPublishedPorts":   {ColPortsNotPublished, SortPortsNotPublished},
 	"PublicPorts":         {ColPortsPublicPart, SortPortsPublicPart},
@@ -53,7 +55,7 @@ var ColumnMap = map[string]ColumnDef{
 	"IP":                  {ColIP, SortIP},
 }
 
-func ColContainerID(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColContainerID(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"CONTAINER ID"}
 	}
@@ -65,7 +67,7 @@ func ColContainerID(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	}
 }
 
-func ColFullImage(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColFullImage(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"IMAGE"}
 	}
@@ -73,7 +75,7 @@ func ColFullImage(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{cont.Image}
 }
 
-func ColRegistry(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColRegistry(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"REGISTRY"}
 	}
@@ -83,7 +85,7 @@ func ColRegistry(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{v}
 }
 
-func ColImage(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColImage(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"IMAGE"}
 	}
@@ -93,7 +95,7 @@ func ColImage(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{v}
 }
 
-func ColImageTag(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColImageTag(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"TAG"}
 	}
@@ -103,7 +105,7 @@ func ColImageTag(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{v}
 }
 
-func ColCommand(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColCommand(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"COMMAND"}
 	}
@@ -118,7 +120,7 @@ func ColCommand(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{cmd}
 }
 
-func ColShortCommand(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColShortCommand(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"COMMAND"}
 	}
@@ -132,7 +134,7 @@ func ColShortCommand(ctx *cli.PSContext, cont *docker.ContainerSchema) []string 
 
 }
 
-func ColRunningFor(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColRunningFor(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"CREATED"}
 	}
@@ -143,7 +145,7 @@ func ColRunningFor(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{timeext.FormatNaturalDurationEnglish(diff)}
 }
 
-func ColCreatedAt(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColCreatedAt(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		if ctx.Opt.TimeFormatHeader != "" {
 			hdr := time.Now().In(ctx.Opt.TimeZone).Format(ctx.Opt.TimeFormatHeader)
@@ -161,7 +163,7 @@ func ColCreatedAt(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{ts.In(ctx.Opt.TimeZone).Format(ctx.Opt.TimeFormat)}
 }
 
-func ColState(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColState(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"STATE"}
 	}
@@ -175,7 +177,7 @@ func ColState(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{stateColor(cont.State, strstate)}
 }
 
-func ColStatus(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColStatus(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"STATUS"}
 	}
@@ -187,7 +189,7 @@ func ColStatus(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{statusColor(cont.Status, cont.Status)}
 }
 
-func ColPortsExposed(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColPortsExposed(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"EXPOSED PORTS"}
 	}
@@ -216,7 +218,7 @@ func ColPortsExposed(ctx *cli.PSContext, cont *docker.ContainerSchema) []string 
 	return r
 }
 
-func ColPortsPublicPart(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColPortsPublicPart(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"EXPOSED PORTS"}
 	}
@@ -236,16 +238,36 @@ func ColPortsPublicPart(ctx *cli.PSContext, cont *docker.ContainerSchema) []stri
 	return r
 }
 
-func ColPortsPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColPortsPublished(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"PUBLISHED PORTS"}
 	}
 
+	pubPortLenMax := ctx.GetIntFromCache("Printer::Ports::port_pub_length", func() int {
+		ml := 0
+		for _, v1 := range allData {
+			for _, v2 := range v1.Ports {
+				ml = mathext.Max(ml, len(strconv.Itoa(v2.PublicPort)))
+			}
+		}
+		return ml
+	})
+
+	privPortLenMax := ctx.GetIntFromCache("Printer::Ports::port_pub_length", func() int {
+		ml := 0
+		for _, v1 := range allData {
+			for _, v2 := range v1.Ports {
+				ml = mathext.Max(ml, len(strconv.Itoa(v2.PrivatePort)))
+			}
+		}
+		return ml
+	})
+
 	m := make(map[string]bool)
 	r := make([]string, 0)
 	for _, port := range cont.PortsSorted() {
-		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", 5)
-		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
+		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", pubPortLenMax)
+		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", privPortLenMax)
 
 		if port.PublicPort != 0 {
 			str := fmt.Sprintf("%s -> %s / %s", p1, p2, port.Type)
@@ -262,16 +284,36 @@ func ColPortsPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []strin
 	return r
 }
 
-func ColPortsPublishedShort(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColPortsPublishedShort(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"PUBLISHED PORTS"}
 	}
 
+	pubPortLenMax := ctx.GetIntFromCache("Printer::Ports::port_pub_length", func() int {
+		ml := 0
+		for _, v1 := range allData {
+			for _, v2 := range v1.Ports {
+				ml = mathext.Max(ml, len(strconv.Itoa(v2.PublicPort)))
+			}
+		}
+		return ml
+	})
+
+	privPortLenMax := ctx.GetIntFromCache("Printer::Ports::port_pub_length", func() int {
+		ml := 0
+		for _, v1 := range allData {
+			for _, v2 := range v1.Ports {
+				ml = mathext.Max(ml, len(strconv.Itoa(v2.PrivatePort)))
+			}
+		}
+		return ml
+	})
+
 	m := make(map[string]bool)
 	r := make([]string, 0)
 	for _, port := range cont.PortsSorted() {
-		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", 5)
-		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
+		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", pubPortLenMax)
+		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", privPortLenMax)
 
 		if port.PublicPort != 0 {
 			str := fmt.Sprintf("%s -> %s", p1, p2)
@@ -285,7 +327,61 @@ func ColPortsPublishedShort(ctx *cli.PSContext, cont *docker.ContainerSchema) []
 	return r
 }
 
-func ColPortsNotPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColPortsPublishedLong(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"PUBLISHED PORTS"}
+	}
+
+	iplenMax := ctx.GetIntFromCache("Printer::Ports::ip_length", func() int {
+		ml := 0
+		for _, v1 := range allData {
+			for _, v2 := range v1.Ports {
+				ml = mathext.Max(ml, len(v2.IP))
+			}
+		}
+		return ml
+	})
+
+	pubPortLenMax := ctx.GetIntFromCache("Printer::Ports::port_pub_length", func() int {
+		ml := 0
+		for _, v1 := range allData {
+			for _, v2 := range v1.Ports {
+				ml = mathext.Max(ml, len(strconv.Itoa(v2.PublicPort)))
+			}
+		}
+		return ml
+	})
+
+	privPortLenMax := ctx.GetIntFromCache("Printer::Ports::port_pub_length", func() int {
+		ml := 0
+		for _, v1 := range allData {
+			for _, v2 := range v1.Ports {
+				ml = mathext.Max(ml, len(strconv.Itoa(v2.PrivatePort)))
+			}
+		}
+		return ml
+	})
+
+	m := make(map[string]bool)
+	r := make([]string, 0)
+	for _, port := range cont.PortsSorted() {
+		p0 := langext.StrPadLeft("["+port.IP+"]", " ", iplenMax+2)
+		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", pubPortLenMax)
+		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", privPortLenMax)
+
+		if port.PublicPort != 0 {
+			str := fmt.Sprintf("%s:%s -> %s", p0, p1, p2)
+			if _, ok := m[str]; !ok {
+				m[str] = true
+				r = append(r, str)
+			}
+		}
+	}
+
+	return r
+}
+
+func ColPortsNotPublished(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"NOT PUBLISHED PORTS"}
 	}
@@ -307,7 +403,7 @@ func ColPortsNotPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []st
 	return r
 }
 
-func ColName(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColName(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"NAME"}
 	}
@@ -323,7 +419,7 @@ func ColName(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return r
 }
 
-func ColSize(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColSize(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"SIZE"}
 	}
@@ -335,7 +431,7 @@ func ColSize(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return []string{fmt.Sprintf("%v (virt %v)", langext.StrPadRight(langext.FormatBytes(cont.SizeRw), " ", 11), langext.FormatBytes(cont.SizeRootFs))}
 }
 
-func ColMounts(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColMounts(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"MOUNTS"}
 	}
@@ -352,7 +448,7 @@ func ColMounts(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return r
 }
 
-func ColIP(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColIP(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"IP"}
 	}
@@ -367,7 +463,7 @@ func ColIP(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return r
 }
 
-func ColLabels(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColLabels(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"LABELS"}
 	}
@@ -380,7 +476,7 @@ func ColLabels(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return r
 }
 
-func ColLabelKeys(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColLabelKeys(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"LABELS"}
 	}
@@ -393,7 +489,7 @@ func ColLabelKeys(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 	return r
 }
 
-func ColNetworks(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+func ColNetworks(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 	if cont == nil {
 		return []string{"NETWORKS"}
 	}
@@ -407,7 +503,7 @@ func ColNetworks(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
 }
 
 func ColPlaintext(str string) printer.ColFun {
-	return func(ctx *cli.PSContext, cont *docker.ContainerSchema) []string {
+	return func(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 		return []string{str}
 	}
 }
@@ -527,6 +623,29 @@ func SortPortsPublished(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *dock
 }
 
 func SortPortsPublishedShort(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	parr1 := langext.ArrCopy(v1.Ports)
+	parr2 := langext.ArrCopy(v2.Ports)
+
+	parr1 = langext.ArrFilter(parr1, func(v docker.PortSchema) bool { return v.PublicPort != 0 })
+	parr2 = langext.ArrFilter(parr2, func(v docker.PortSchema) bool { return v.PublicPort != 0 })
+
+	pl1 := langext.ArrMap(parr1, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+	pl2 := langext.ArrMap(parr2, func(v docker.PortSchema) string {
+		return fmt.Sprintf("%s;%08d;%08d;%s", v.IP, v.PrivatePort, v.PublicPort, v.Type)
+	})
+
+	langext.SortStable(pl1)
+	langext.SortStable(pl2)
+
+	pstr1 := strings.Join(pl1, "\n")
+	pstr2 := strings.Join(pl2, "\n")
+
+	return langext.Compare(pstr1, pstr2)
+}
+
+func SortPortsPublishedLong(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
 	parr1 := langext.ArrCopy(v1.Ports)
 	parr2 := langext.ArrCopy(v2.Ports)
 
@@ -711,12 +830,12 @@ func getSortFun(colkey string) (ColSortFun, bool) {
 	return nil, false
 }
 
-func replaceSingleLineColumnData(ctx *cli.PSContext, data docker.ContainerSchema, format string) string {
+func replaceSingleLineColumnData(ctx *cli.PSContext, allData []docker.ContainerSchema, data docker.ContainerSchema, format string) string {
 
 	r := format
 
 	for k, v := range ColumnMap {
-		r = strings.ReplaceAll(r, "{{."+k+"}}", strings.Join(v.Reader(ctx, &data), " "))
+		r = strings.ReplaceAll(r, "{{."+k+"}}", strings.Join(v.Reader(ctx, allData, &data), " "))
 	}
 
 	return r
