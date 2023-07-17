@@ -18,6 +18,22 @@ type ContainerSchema struct {
 	SizeRootFs      int64                    `json:"SizeRootFs"`
 }
 
+func (s ContainerSchema) PortsSorted() []PortSchema {
+	ports := langext.ArrCopy(s.Ports)
+
+	langext.SortSliceStable(ports, func(p1, p2 PortSchema) bool {
+		if p1.PublicPort != p2.PublicPort {
+			return p1.PublicPort < p2.PublicPort
+		}
+		if p1.PrivatePort != p2.PrivatePort {
+			return p1.PrivatePort < p2.PrivatePort
+		}
+		return false
+	})
+
+	return ports
+}
+
 type ContainerHostConfig struct {
 	NetworkMode string `json:"NetworkMode"`
 }

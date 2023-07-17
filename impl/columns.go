@@ -193,7 +193,7 @@ func ColPortsExposed(ctx *cli.PSContext, cont *docker.ContainerSchema) []string 
 
 	m := make(map[string]bool)
 	r := make([]string, 0)
-	for _, port := range cont.Ports {
+	for _, port := range cont.PortsSorted() {
 		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", 5)
 		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
 
@@ -222,7 +222,7 @@ func ColPortsPublicPart(ctx *cli.PSContext, cont *docker.ContainerSchema) []stri
 
 	m := make(map[string]bool)
 	r := make([]string, 0)
-	for _, port := range cont.Ports {
+	for _, port := range cont.PortsSorted() {
 		if port.PublicPort != 0 {
 
 			str := fmt.Sprintf("%d", port.PublicPort)
@@ -243,7 +243,7 @@ func ColPortsPublished(ctx *cli.PSContext, cont *docker.ContainerSchema) []strin
 
 	m := make(map[string]bool)
 	r := make([]string, 0)
-	for _, port := range cont.Ports {
+	for _, port := range cont.PortsSorted() {
 		p1 := langext.StrPadLeft(strconv.Itoa(port.PublicPort), " ", 5)
 		p2 := langext.StrPadLeft(strconv.Itoa(port.PrivatePort), " ", 5)
 
