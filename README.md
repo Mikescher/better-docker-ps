@@ -28,16 +28,24 @@ More Changes from default docker-ps:
  - Added options to control the color-output, the used socket, the time-zone and time-format, etc (see `./dops --help`) 
 
 ## Getting started
-
+### Generic Linux
  - Download the latest binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases) and put it into yout PATH (eg /usr/local/bin)
 
+### Debian
+ Download the latest [amd64](https://github.com/Mikescher/better-docker-ps/releases/latest/download/dops_linux-amd64-static) binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases) and put it into yout PATH (eg /usr/local/bin)
+ - The follow is a single command to add the binary `cd /usr/local/bin && sudo wget https://github.com/Mikescher/better-docker-ps/releases/latest/download/dops_linux-amd64-static && sudo chmod +x dops_linux-amd64-static && cd`  
+
+You can now run the command with `dops_linux-amd64-static`
+
+### ARCH
  - Alternatively you can use one of the AUR packages (under Arch Linux):
     * https://aur.archlinux.org/packages/dops-bin (installs `dops` into your PATH)
     * https://aur.archlinux.org/packages/dops-git (installs `dops` into your PATH)
  - or the homebrew package: 
     * `brew tap mikescher/tap && brew install dops`
-    
- - (optional) alias the docker ps command (see [section below](#usage-as-drop-in-replacement))
+
+### Optional steps
+ - Alias the docker ps command (see [section below](#usage-as-drop-in-replacement))
 
 ## Screenshots
 
