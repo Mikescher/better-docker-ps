@@ -29,15 +29,22 @@ More Changes from default docker-ps:
 
 ## Getting started
 
- - Download the latest binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases) and put it into yout PATH (eg /usr/local/bin)
+### Generic Linux (e.g. Debian/Fedora/...)
+ - Download the latest binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases) and put it into your PATH (eg /usr/local/bin)
+ - You can also use the following one-liner (afterwards you can use the `dops` command everywhere):
+```
+$> sudo wget "https://github.com/Mikescher/better-docker-ps/releases/latest/download/dops_linux-amd64-static" -O "/usr/local/bin/dops" && sudo chmod +x "/usr/local/bin/dops"
+```
 
+### ArchLinux
  - Alternatively you can use one of the AUR packages (under Arch Linux):
     * https://aur.archlinux.org/packages/dops-bin (installs `dops` into your PATH)
     * https://aur.archlinux.org/packages/dops-git (installs `dops` into your PATH)
  - or the homebrew package: 
     * `brew tap mikescher/tap && brew install dops`
-    
- - (optional) alias the docker ps command (see [section below](#usage-as-drop-in-replacement))
+
+### Optional steps
+ - Alias the docker ps command to `dops` (see [section below](#usage-as-drop-in-replacement))
 
 ## Screenshots
 
