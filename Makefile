@@ -1,5 +1,6 @@
 
 build:
+	go generate ./...
 	CGO_ENABLED=0 go build -o _out/dops ./cmd/dops
 
 run: build
@@ -12,6 +13,8 @@ clean:
 package:
 	go clean
 	rm -rf ./_out/*
+
+	_data/package-data/sanitycheck.sh
 
 	GOARCH=386   GOOS=linux   CGO_ENABLED=0 go build -o _out/dops_linux-386-static                     ./cmd/dops  # Linux - 32 bit
 	GOARCH=amd64 GOOS=linux   CGO_ENABLED=0 go build -o _out/dops_linux-amd64-static                   ./cmd/dops  # Linux - 64 bit
