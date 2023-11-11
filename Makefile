@@ -22,6 +22,9 @@ package:
 	GOARCH=386   GOOS=linux                 go build -o _out/dops_linux-386                            ./cmd/dops  # Linux - 32 bit
 	GOARCH=amd64 GOOS=linux                 go build -o _out/dops_linux-amd64                          ./cmd/dops  # Linux - 64 bit
 	GOARCH=arm64 GOOS=linux                 go build -o _out/dops_linux-arm64                          ./cmd/dops  # Linux - ARM
+	GOARCH=arm   GOOS=linux   GOARM=5       go build -o _out/dops_linux-arm32v5                        ./cmd/dops  # Linux - ARM32 v5 (e.g. Raspberry 3)
+	GOARCH=arm   GOOS=linux   GOARM=6       go build -o _out/dops_linux-arm32v6                        ./cmd/dops  # Linux - ARM32 v6
+	GOARCH=arm   GOOS=linux   GOARM=7       go build -o _out/dops_linux-arm32v7                        ./cmd/dops  # Linux - ARM32 v7
 	GOARCH=amd64 GOOS=darwin                go build -o _out/dops_macos-amd64                          ./cmd/dops  # macOS - 32 bit
 	GOARCH=amd64 GOOS=darwin                go build -o _out/dops_macos-amd64                          ./cmd/dops  # macOS - 64 bit
 	GOARCH=amd64 GOOS=openbsd               go build -o _out/dops_openbsd-amd64                        ./cmd/dops  # OpenBSD - 64 bit
