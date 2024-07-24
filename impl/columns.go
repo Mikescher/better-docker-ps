@@ -974,7 +974,7 @@ func replaceSingleLineColumnData(ctx *cli.PSContext, allData []docker.ContainerS
 }
 
 func parseTableDef(fmt string) []printer.ColFun {
-	split := strings.Split(fmt[6:], "\\t")
+	split := regexp.MustCompile("(\\\\t|\\t)").Split(fmt[6:], -1)
 	columns1 := make([]printer.ColFun, 0)
 	for _, v := range split {
 		if cf, ok := getColFun(v); ok {

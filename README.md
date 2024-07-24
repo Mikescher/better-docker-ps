@@ -143,6 +143,45 @@ $ ./dops --format "table {{.ID}}\\tNAME:{{ printf \"%.10s\" (join .Names \";\") 
 
 ~~~~
 
+## Persistant configuration
+
+You can also configure some/most of the options via a configuration file.  
+Place a TOML formatted file in `$HOME/.config/dops.conf` / `$XDG_CONFIG_HOME/dops.conf`.
+
+The following keys are supported:
+ - verbose
+ - silent
+ - timezone
+ - timeformat
+ - timeformat-header
+ - color
+ - socket
+ - all
+ - size
+ - filter (= string array)
+ - format (= string array)
+ - last
+ - latest
+ - truncate
+ - header (= true / false / simple)
+ - sort (= string array)
+ - sort-direction (= string array)
+
+Example:
+```toml
+verbose = 0
+
+timezone = "Europe/Berlin"
+
+format = [
+   "table {{.ID}}\t{{.Names}}\t{{.State}}\t{{.Status}}",
+   "table {{.ID}}\t{{.Names}}\t{{.State}}",
+   "table {{.ID}}\t{{.Names}}",
+   "table {{.ID}}",
+]
+
+header = "simple"
+```
 
 ## Manual
 

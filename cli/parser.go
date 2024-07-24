@@ -3,8 +3,11 @@ package cli
 import (
 	"better-docker-ps/pserr"
 	"fmt"
+	"github.com/BurntSushi/toml"
+	"github.com/kirsle/configdir"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -101,6 +104,153 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 	// Process common options
 
 	opt := DefaultCLIOptions()
+
+	confPath := filepath.Join(configdir.LocalConfig(), "dops.conf")
+
+	if v, err := os.ReadFile(confPath); err == nil {
+
+		tomldata := make(map[string]any)
+		_, err = toml.Decode(string(v), &tomldata)
+		if err != nil {
+			return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "': " + err.Error())
+		}
+
+		for tk, tvany := range tomldata {
+
+			tv := fmt.Sprintf("%v", tvany)
+			var tvarr []string = nil
+			if varr1, ok := tvany.([]string); ok {
+				tvarr = varr1
+			} else if varr2, ok := tvany.([]any); ok && langext.ArrAll(varr2, func(v any) bool { _, ok := v.(string); return ok }) {
+				tvarr = langext.ArrCastSafe[any, string](varr2)
+			} else {
+				tvarr = []string{tv}
+			}
+
+			if tk == "verbose" {
+				opt.Verbose, err = strconv.ParseBool(tv)
+				if err != nil {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "' (invalid value for 'verbose'): " + err.Error())
+				}
+			} else if tk == "silent" {
+				opt.Quiet, err = strconv.ParseBool(tv)
+				if err != nil {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "' (invalid value for 'silent'): " + err.Error())
+				}
+			} else if tk == "timezone" {
+				loc, err := time.LoadLocation(tv)
+				if err != nil {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + ": Unknown timezone: " + tv)
+				}
+				opt.TimeZone = loc
+			} else if tk == "timeformat" {
+				opt.TimeFormat = tv
+			} else if tk == "timeformat-header" {
+				opt.TimeFormatHeader = tv
+			} else if tk == "color" {
+				opt.OutputColor, err = strconv.ParseBool(tv)
+				if err != nil {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "' (invalid value for 'color'): " + err.Error())
+				}
+			} else if tk == "socket" {
+				opt.Socket = tv
+			} else if tk == "all" {
+				opt.All, err = strconv.ParseBool(tv)
+				if err != nil {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "' (invalid value for 'all'): " + err.Error())
+				}
+			} else if tk == "size" {
+				opt.WithSize, err = strconv.ParseBool(tv)
+				if err != nil {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "' (invalid value for 'size'): " + err.Error())
+				}
+			} else if tk == "filter" {
+				for _, elem := range tvarr {
+					spl := strings.SplitN(elem, "=", 2)
+					if len(spl) != 2 {
+						return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "': Filter value must have a key and a value (a=b): " + elem)
+					}
+					if opt.Filter == nil {
+						_v := make(map[string]string)
+						opt.Filter = &_v
+					}
+					filter := *opt.Filter
+					filter[spl[0]] = spl[1]
+					opt.Filter = &filter
+				}
+			} else if tk == "format" {
+				for _, elem := range tvarr {
+					if opt.DefaultFormat {
+						opt.Format = make([]string, 0)
+					}
+					opt.Format = append(opt.Format, elem)
+					opt.DefaultFormat = false
+				}
+			} else if tk == "last" {
+				if vint, err := strconv.ParseInt(tv, 10, 32); err == nil {
+					opt.Limit = int(vint)
+					opt.All = true
+					continue
+				} else {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "': Failed to parse number of field 'last': '" + tv + "'")
+				}
+
+			} else if tk == "latest" {
+				vbool, err := strconv.ParseBool(tv)
+				if err != nil {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "': Failed to parse boolean value of 'latest': '" + tv + "'")
+				}
+				if vbool {
+					opt.Limit = -1
+					opt.All = true
+				} else {
+					opt.Limit = 1
+					opt.All = false
+				}
+			} else if tk == "truncate" {
+				opt.Truncate, err = strconv.ParseBool(tv)
+				if err != nil {
+					return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "' (invalid value for 'truncate'): " + err.Error())
+				}
+			} else if tk == "header" {
+				if strings.EqualFold(tv, "no") {
+					opt.PrintHeader = false
+				} else if strings.EqualFold(tv, "simple") {
+					opt.PrintHeader = true
+					opt.PrintHeaderLines = false
+				} else {
+					vbool, err := strconv.ParseBool(tv)
+					if err != nil {
+						return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "': Failed to parse boolean value of 'latest': '" + tv + "'")
+					}
+					if vbool {
+						opt.PrintHeader = true
+						opt.PrintHeaderLines = true
+					} else {
+						opt.PrintHeader = false
+						opt.PrintHeaderLines = false
+					}
+				}
+			} else if tk == "sort" {
+				opt.SortColumns = tvarr
+			} else if tk == "sort-direction" {
+				opt.SortDirection = make([]SortDirection, 0)
+				for _, sdv := range tvarr {
+					if strings.ToUpper(sdv) == "ASC" {
+						opt.SortDirection = append(opt.SortDirection, SortASC)
+						continue
+					}
+					if strings.ToUpper(sdv) == "DESC" {
+						opt.SortDirection = append(opt.SortDirection, SortDESC)
+						continue
+					}
+					return Options{}, pserr.DirectOutput.New(fmt.Sprintf("Failed to parse config file '"+confPath+"': Failed to parse sort-direction argument '%s'", sdv))
+				}
+			} else {
+				return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "' (unknown key '" + tk + "')")
+			}
+		}
+	}
 
 	for _, arg := range allOptionArguments {
 
