@@ -4,15 +4,19 @@ import (
 	"better-docker-ps/cli"
 	"better-docker-ps/docker"
 	"better-docker-ps/printer"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
 	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 )
 
@@ -815,12 +819,139 @@ func SortNetworks(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.Con
 // #####################################################################################################################
 
 func getColFun(colkey string) (printer.ColFun, bool) {
+
+	// Fast branch, simple references to columns
+
 	for k, v := range ColumnMap {
 		if "{{."+k+"}}" == colkey {
 			return v.Reader, true
 		}
 	}
+
+	// Slow branch, fully-featured go templates
+
+	if strings.HasPrefix(colkey, "{{") && strings.HasSuffix(colkey, "}}") {
+		return templateColFun(colkey, ""), true
+	}
+
+	if splt := strings.SplitN(colkey, ":", 2); len(splt) == 2 && strings.HasPrefix(splt[1], "{{") && strings.HasSuffix(splt[1], "}}") {
+		return templateColFun(splt[1], splt[0]), true
+	}
+
+	// Fallback, nothing
+
 	return nil, false
+}
+
+func templateColFun(fmtstr string, header string) printer.ColFun {
+	return func(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) (res []string) {
+		defer func() {
+			if r := recover(); r != nil {
+				ctx.PrintErrorMessage(fmt.Sprintf("Panic in template evaluation of '%s':\n%v", fmtstr, r))
+				res = []string{"@ERROR"}
+			}
+		}()
+
+		if cont == nil {
+			return []string{header}
+		}
+
+		funcs := template.FuncMap{
+			"join": strings.Join,
+			"array_last": func(v any) any {
+				rval := reflect.ValueOf(v)
+				alen := rval.Len()
+				if alen == 0 {
+					return nil
+				}
+				return rval.Index(alen - 1).Interface()
+			},
+			"array_slice": func(v any, start int, end int) any {
+				rval := reflect.ValueOf(v)
+				alen := rval.Len()
+
+				start = max(0, min(alen, start))
+				end = max(0, min(alen, end))
+
+				return rval.Slice(start, end).Interface()
+			},
+			"in_array": func(compval any, arrval any) (resp bool) {
+				defer func() {
+					if rec := recover(); rec != nil {
+						resp = false
+					}
+				}()
+				v := reflect.ValueOf(arrval)
+				for i := 0; i < v.Len(); i++ {
+					if v.Index(i).Equal(reflect.ValueOf(compval)) {
+						return true
+					}
+				}
+				return false
+			},
+			"json": func(obj any) string {
+				v, err := json.Marshal(obj)
+				if err != nil {
+					panic(err)
+				}
+				return string(v)
+			},
+			"json_indent": func(obj any) string {
+				v, err := json.MarshalIndent(obj, "", "  ")
+				if err != nil {
+					panic(err)
+				}
+				return string(v)
+			},
+			"json_pretty": func(v string) string {
+				buffer := &bytes.Buffer{}
+				err := json.Indent(buffer, []byte(v), "", "  ")
+				if err != nil {
+					return v
+				} else {
+					return buffer.String()
+				}
+			},
+			"coalesce": func(val any, def any) any {
+				if langext.IsNil(val) {
+					return def
+				} else {
+					return val
+				}
+			},
+			"to_string": func(v any) string {
+				return fmt.Sprintf("%v", v)
+			},
+			"deref": func(vInput any) any {
+				val := reflect.ValueOf(vInput)
+				if val.Kind() == reflect.Ptr {
+					return val.Elem().Interface()
+				}
+				return ""
+			},
+			"now": func() time.Time {
+				return time.Now()
+			},
+			"uniqid": func() string {
+				return langext.MustRawHexUUID()
+			},
+		}
+
+		templ, err := template.New("col").Funcs(funcs).Parse(fmtstr)
+		if err != nil {
+			ctx.PrintErrorMessage(fmt.Sprintf("Error in template parsing of '%s':\n%v", fmtstr, err.Error()))
+			res = []string{"@ERROR"}
+		}
+
+		bfr := &bytes.Buffer{}
+		err = templ.Execute(bfr, *cont)
+		if err != nil {
+			ctx.PrintErrorMessage(fmt.Sprintf("Error in template evaluation of '%s':\n%v", fmtstr, err.Error()))
+			res = []string{"@ERROR"}
+		}
+
+		return strings.Split(bfr.String(), "\n")
+	}
 }
 
 func getSortFun(colkey string) (ColSortFun, bool) {

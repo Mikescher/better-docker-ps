@@ -105,6 +105,24 @@ The first format that fits in your terminal width is used.
 
 But you can also override it by supplying a `--format` parameter. If you supply more than one `--format` parameter the first one that fits your terminal is used (same logic as with the default ones...)
 
+Normally only simple columns aka `{{.Status}}` are supported.  
+But you can also use the full golang template syntax (e.g. `{{ printf "%.15s" .Command }}`).
+In this case it can be useful to specify the column header by prefixing it with a colon (`SHORTENED NAME:{{ printf "%.10s" (join .Names ";") }}`)
+
+The following functions are defined in these templates (plus the [default go functions](https://pkg.go.dev/text/template)):
+ - `join`: strings.Join
+ - `array_last`: v\[-1\]
+ - `array_slice`: v\[a..b\] 
+ - `in_array`: v1.contains(v2)
+ - `json`: json.Marshal(v)
+ - `json_indent`: json.MarshalIndent(v, "", "  ")
+ - `json_pretty`:  json.Indent(v, "", "  ")
+ - `coalesce`: v1 ?? v2
+ - `to_string`: fmt.Sprintf("%v", v)
+ - `deref`: *v
+ - `now`: time.Now()
+ - `uniqid`: UUID
+
 Examples:
 ~~~~
 $ ./dops --format "table {{.ID}}"
@@ -119,6 +137,9 @@ $ ./dops --format "ID: {{.ID}}; Name: {{.Names}}"
 $ ./dops -aq
 
 $ ./dops --sort "IP" --sort-direction "ASC"
+
+$ ./dops --format "table {{.ID}}\\tCMD:{{ printf \"%.15s\" .Command }}"
+$ ./dops --format "table {{.ID}}\\tNAME:{{ printf \"%.10s\" (join .Names \";\") }}"
 
 ~~~~
 
