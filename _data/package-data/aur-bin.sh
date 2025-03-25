@@ -15,7 +15,7 @@ cs0="$(cd ../../../ && sha256sum _out/dops_linux-amd64 | cut -d ' ' -f 1)"
 echo "Version: ${version} (${cs0})"
 
 sed --regexp-extended  -i "s/pkgver=[0-9\.]+/pkgver=${version}/g"         PKGBUILD
-sed --regexp-extended  -i "s/_bin_sha='[A-Za-z0-9]'+/_bin_sha='${cs0}'/g" PKGBUILD
+sed --regexp-extended  -i "s/_bin_sha='[A-Za-z0-9]+m'/_bin_sha='${cs0}'/g" PKGBUILD
 
 namcap PKGBUILD
 makepkg --printsrcinfo > .SRCINFO
