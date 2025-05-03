@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
-	"gogs.mikescher.com/BlackForestBytes/goext/termext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/langext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/termext"
 )
 
 type PSContext struct {

@@ -1,7 +1,7 @@
 package docker
 
 import (
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/langext"
 	"net"
 )
 

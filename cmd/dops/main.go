@@ -6,7 +6,7 @@ import (
 	"better-docker-ps/impl"
 	"better-docker-ps/pserr"
 	"fmt"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/langext"
 	"os"
 	"runtime/debug"
 )

@@ -3,8 +3,8 @@ package printer
 import (
 	"better-docker-ps/cli"
 	"better-docker-ps/docker"
-	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
-	"gogs.mikescher.com/BlackForestBytes/goext/termext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/mathext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/termext"
 	"strings"
 )
 

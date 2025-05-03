@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"gogs.mikescher.com/BlackForestBytes/goext/termext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/termext"
 	"time"
 )
 

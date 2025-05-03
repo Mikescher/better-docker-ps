@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/kirsle/configdir"
-	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/timeext"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/joomcode/errorx"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"git.blackforestbytes.com/BlackForestBytes/goext/langext"
 )
 
 func ParseCommandline(columnKeys []string) (Options, error) {
