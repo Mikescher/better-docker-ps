@@ -1,5 +1,5 @@
 # ./dops - better `docker ps` 
-A replacement for the default docker-ps that tries really hard to fit into the width of your terminal.
+A replacement for the default docker-ps that tries really hard to fit within your terminal width.
 
 ![](readme.d/main.png)
 
@@ -7,8 +7,8 @@ A replacement for the default docker-ps that tries really hard to fit into the w
 
 By default, my `docker ps` output is really wide and every line wraps around into three.
 This (obviously) breaks the tabular display and makes everything chaotic.  
-*(This is becomes really extreme if one container has multiple port mappings, and they are all displayed in a single row)*
-It does not look like we will get a better output in the foreseeable future (see [moby#7477](https://github.com/moby/moby/issues/7477)), so I decided to make my own drop-in replacement.  
+*(This gets especially bad if one container has multiple port mappings, and they are all displayed in a single row)*
+It doesn’t look like we’ll get improved output in the foreseeable future (see [moby#7477](https://github.com/moby/moby/issues/7477)), so I decided to make my own drop-in replacement.  
 
 ## Features
 
