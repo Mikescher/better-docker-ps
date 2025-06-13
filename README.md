@@ -8,7 +8,7 @@ A replacement for the default docker-ps that tries really hard to fit within you
 By default, my `docker ps` output is really wide and every line wraps around into three.
 This (obviously) breaks the tabular display and makes everything chaotic.  
 *(This gets especially bad if one container has multiple port mappings, and they are all displayed in a single row)*
-It doesn’t look like we’ll get improved output in the foreseeable future (see [moby#7477](https://github.com/moby/moby/issues/7477)), so I decided to make my own drop-in replacement.  
+It doesn't look like we'll get improved output in the foreseeable future (see [moby#7477](https://github.com/moby/moby/issues/7477)), so I decided to make my own drop-in replacement.  
 
 ## Features
 
@@ -27,13 +27,12 @@ More Changes from default docker-ps:
    `{{.ImageName}`, `{{.ImageTag}`, `{{.Tag}`, `{{.ImageRegistry}`, `{{.Registry}`, `{{.ShortCommand}`, `{{.LabelKeys}`, `{{.IP}`                         
  - Added options to control the color-output, the used socket, the time-zone and time-format, etc (see `./dops --help`) 
 
-## Getting started
+## Installation
 
-### Generic Linux (e.g. Debian/Fedora/...)
- - Download the latest binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases) and put it into your PATH (eg /usr/local/bin)
- - You can also use the following one-liner (afterwards you can use the `dops` command everywhere):
-```
-$> sudo wget "https://github.com/Mikescher/better-docker-ps/releases/latest/download/dops_linux-amd64-static" -O "/usr/local/bin/dops" && sudo chmod +x "/usr/local/bin/dops"
+You can install `dops` by running the official installer script. This will automatically detect your operating system and architecture.
+
+```sh
+curl -sSL https://raw.githubusercontent.com/Mikescher/better-docker-ps/master/install.sh | bash
 ```
 
 ### ArchLinux
@@ -45,6 +44,17 @@ $> sudo wget "https://github.com/Mikescher/better-docker-ps/releases/latest/down
 
 ### Optional steps
  - Alias the docker ps command to `dops` (see [section below](#usage-as-drop-in-replacement))
+
+### Building from source
+
+If you want to build `dops` from source, you need to have Go installed.
+
+```sh
+git clone https://github.com/Mikescher/better-docker-ps.git
+cd better-docker-ps
+make build
+mv _out/dops "$HOME/.local/bin/"
+```
 
 ## Screenshots
 
