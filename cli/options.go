@@ -1,8 +1,13 @@
 package cli
 
 import (
-	"git.blackforestbytes.com/BlackForestBytes/goext/termext"
+	"bufio"
+	"encoding/json"
+	"os/exec"
+	"regexp"
 	"time"
+
+	"git.blackforestbytes.com/BlackForestBytes/goext/termext"
 )
 
 type SortDirection string
@@ -38,6 +43,7 @@ type Options struct {
 }
 
 func DefaultCLIOptions() Options {
+	socket := activeDockerContextSocket()
 	return Options{
 		Version:          false,
 		Help:             false,
@@ -47,7 +53,7 @@ func DefaultCLIOptions() Options {
 		TimeZone:         time.Local,
 		TimeFormatHeader: "Z07:00 MST",
 		TimeFormat:       "2006-01-02 15:04:05",
-		Socket:           "/var/run/docker.sock",
+		Socket:           socket,
 		Input:            nil,
 		All:              false,
 		WithSize:         false,
@@ -76,4 +82,57 @@ func DefaultCLIOptions() Options {
 		SortDirection:    make([]SortDirection, 0),
 		WatchInterval:    nil,
 	}
+}
+
+const defaultSocket = "/var/run/docker.sock"
+
+// Get the socket for the active docker context
+//
+// This uses `docker context list --format json` and looks for the line with `"Current": true`.
+//
+// If it errors at any point it just returns `defaultSocket`.
+func activeDockerContextSocket() string {
+	cmd := exec.Command("docker", "context", "list", "--format", "json")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return defaultSocket
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return defaultSocket
+	}
+
+	// json format is actually jsonlines, so read line-by-line until you find the active one
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		var context dockerContext
+		err = json.Unmarshal(scanner.Bytes(), &context)
+		if err != nil {
+			continue
+		}
+		if context.Current {
+			return context.socket()
+		}
+	}
+
+	return defaultSocket
+}
+
+type dockerContext struct {
+	Name           string
+	Description    string
+	DockerEndpoint string
+	Current        bool
+	Error          string
+	ContextType    string
+}
+
+var unixSocketPrefixPat = regexp.MustCompile("^unix://")
+
+// Get the socket from the docker context line.
+//
+// This just strips the `unix://` prefix from it if it is there.
+func (ctx dockerContext) socket() string {
+	return unixSocketPrefixPat.ReplaceAllString(ctx.DockerEndpoint, "")
 }
