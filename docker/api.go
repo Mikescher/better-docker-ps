@@ -27,10 +27,12 @@ func ListContainer(ctx *cli.PSContext) ([]byte, error) {
 		return data, nil
 	}
 
+	socket := ctx.Opt.GetSocket()
+
 	client := http.Client{
 		Transport: &http.Transport{
 			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-				return net.Dial("unix", ctx.Opt.Socket)
+				return net.Dial("unix", socket)
 			},
 		},
 	}

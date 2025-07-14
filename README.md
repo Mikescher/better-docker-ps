@@ -210,7 +210,7 @@ Options (extra | do not exist in `docker ps`):
   --timezone                         Specify the timezone for date outputs
   --color <true|false>               Enable/Disable terminal color output
   --no-color                         Disable terminal color output
-  --socket <filepath>                Specify the docker socket location (Default: /var/run/docker.sock)
+  --socket <filepath>                Specify the docker socket location (Default: `auto` - which calls the docker cli to determine the socket)
   --timeformat <go-time-fmt>         Specify the datetime output format (golang syntax)
   --no-header                        Do not print the table header
   --simple-header                    Do not print the lines under the header

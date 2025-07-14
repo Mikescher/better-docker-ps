@@ -6,9 +6,10 @@ import (
 	"better-docker-ps/impl"
 	"better-docker-ps/pserr"
 	"fmt"
-	"git.blackforestbytes.com/BlackForestBytes/goext/langext"
 	"os"
 	"runtime/debug"
+
+	"git.blackforestbytes.com/BlackForestBytes/goext/langext"
 )
 
 // Inspiration: https://github.com/moby/moby/issues/7477
@@ -99,11 +100,13 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  --timezone                         Specify the timezone for date outputs")
 	ctx.PrintPrimaryOutput("  --color <true|false>               Enable/Disable terminal color output")
 	ctx.PrintPrimaryOutput("  --no-color                         Disable terminal color output")
-	ctx.PrintPrimaryOutput("  --socket <filepath>                Specify the docker socket location (Default: /var/run/docker.sock)")
+	ctx.PrintPrimaryOutput("  --socket <filepath>                Specify the docker socket location (Default: `auto` - which calls the docker cli to determine the socket)")
 	ctx.PrintPrimaryOutput("  --timeformat <go-time-fmt>         Specify the datetime output format (golang syntax)")
 	ctx.PrintPrimaryOutput("  --no-header                        Do not print the table header")
 	ctx.PrintPrimaryOutput("  --simple-header                    Do not print the lines under the header")
 	ctx.PrintPrimaryOutput("  --format <fmt>                     You can specify multiple formats and the first one that fits your terminal widt will be used")
+	ctx.PrintPrimaryOutput("  --sort <col>                       Sort output by a specific column, use the same identifier as in --format, only useful together with table formats ")
+	ctx.PrintPrimaryOutput("  --sort-direction <ASC|DESC>        The sort direction, only useful in combination with --sort")
 	ctx.PrintPrimaryOutput("  --watch <interval>                 Automatically refresh output periodically (interval is optional, default: 2s)")
 	ctx.PrintPrimaryOutput("")
 	ctx.PrintPrimaryOutput("Available --format keys (default):")

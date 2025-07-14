@@ -1,12 +1,11 @@
 package cli
 
 import (
-	"bufio"
 	"encoding/json"
-	"os/exec"
 	"regexp"
 	"time"
 
+	"git.blackforestbytes.com/BlackForestBytes/goext/cmdext"
 	"git.blackforestbytes.com/BlackForestBytes/goext/termext"
 )
 
@@ -43,7 +42,6 @@ type Options struct {
 }
 
 func DefaultCLIOptions() Options {
-	socket := activeDockerContextSocket()
 	return Options{
 		Version:          false,
 		Help:             false,
@@ -53,7 +51,7 @@ func DefaultCLIOptions() Options {
 		TimeZone:         time.Local,
 		TimeFormatHeader: "Z07:00 MST",
 		TimeFormat:       "2006-01-02 15:04:05",
-		Socket:           socket,
+		Socket:           "auto",
 		Input:            nil,
 		All:              false,
 		WithSize:         false,
@@ -84,38 +82,30 @@ func DefaultCLIOptions() Options {
 	}
 }
 
-const defaultSocket = "/var/run/docker.sock"
+func (o Options) GetSocket() string {
+	const defaultSocket = "/var/run/docker.sock"
 
-// Get the socket for the active docker context
-//
-// This uses `docker context list --format json` and looks for the line with `"Current": true`.
-//
-// If it errors at any point it just returns `defaultSocket`.
-func activeDockerContextSocket() string {
-	cmd := exec.Command("docker", "context", "list", "--format", "json")
-	stdout, err := cmd.StdoutPipe()
+	if o.Socket != "auto" {
+		return o.Socket
+	}
+
+	res, err := cmdext.Runner("docker").Arg("context").Arg("list").Arg("--format").Arg("json").Timeout(10 * time.Second).FailOnTimeout().FailOnExitCode().Run()
 	if err != nil {
+		// on error we just return the default socket
 		return defaultSocket
 	}
 
-	err = cmd.Start()
+	var context dockerContext
+	err = json.Unmarshal([]byte(res.StdOut), &context)
 	if err != nil {
+		// on error we just return the default socket
 		return defaultSocket
 	}
-
-	// json format is actually jsonlines, so read line-by-line until you find the active one
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		var context dockerContext
-		err = json.Unmarshal(scanner.Bytes(), &context)
-		if err != nil {
-			continue
-		}
-		if context.Current {
-			return context.socket()
-		}
+	if context.Current {
+		return context.socket()
 	}
 
+	// if we don't have a current context, we just return the default socket
 	return defaultSocket
 }
 
