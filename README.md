@@ -35,8 +35,11 @@ You can install `dops` by running the official installer script. This will autom
 curl -sSL https://raw.githubusercontent.com/Mikescher/better-docker-ps/master/install.sh | bash
 ```
 
+On **Arch Linux**, the installer will automatically detect available AUR helpers (yay, paru, pikaur, pamac, trizen, yaourt) and install via AUR for easier package management. If no AUR helper is found, it falls back to binary installation.
+
 ### ArchLinux
- - Alternatively you can use one of the AUR packages (under Arch Linux):
+ - The installer script automatically uses AUR helpers when available
+ - Alternatively you can manually install via AUR:
     * https://aur.archlinux.org/packages/dops-bin (installs `dops` into your PATH)
     * https://aur.archlinux.org/packages/dops-git (installs `dops` into your PATH)
  - or the homebrew package: 
