@@ -345,6 +345,10 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 				opt.Filter = &_v
 			}
 			filter := *opt.Filter
+			if spl[0] == "project" {
+				spl[0] = "label"
+				spl[1] = "com.docker.compose.project=" + spl[1]
+			}
 			filter[spl[0]] = []string{spl[1]}
 			opt.Filter = &filter
 			continue
