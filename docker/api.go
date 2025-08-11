@@ -57,7 +57,7 @@ func ListContainer(ctx *cli.PSContext) ([]byte, error) {
 			return nil, errorx.InternalError.Wrap(err, "Failed to marshal filter")
 		}
 
-		uri += "&filter=" + url.PathEscape(string(bin))
+		uri += "&filters=" + url.PathEscape(string(bin))
 	}
 
 	response, err := client.Get(uri)
