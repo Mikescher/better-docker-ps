@@ -33,7 +33,7 @@ More Changes from default docker-ps:
  - Download the latest binary from the [releases page](https://github.com/Mikescher/better-docker-ps/releases) and put it into your PATH (eg /usr/local/bin)
  - You can also use the following one-liner (afterwards you can use the `dops` command everywhere):
 ```
-$> sudo wget "https://github.com/Mikescher/better-docker-ps/releases/latest/download/dops_linux-amd64-static" -O "/usr/local/bin/dops" && sudo chmod +x "/usr/local/bin/dops"
+sudo wget "https://github.com/Mikescher/better-docker-ps/releases/latest/download/dops_linux-amd64-static" -O "/usr/local/bin/dops" && sudo chmod +x "/usr/local/bin/dops"
 ```
 
 ### ArchLinux
