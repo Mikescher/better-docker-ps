@@ -14,7 +14,7 @@ cp dops.rb dops_patch.rb
 
 
 version="$(cd ../../../ && git tag --sort=-v:refname | grep -P 'v[0-9\.]' | head -1 | cut -c2-)"
-cs0="$(cd ../../../ && sha256sum _out/dops_macos-amd64 | cut -d ' ' -f 1)"
+cs0="$(cd ../../../ && sha256sum _out/dops_macos-arm64 | cut -d ' ' -f 1)"
 
 echo "Version: ${version} (${cs0})"
 
