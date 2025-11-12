@@ -8,7 +8,7 @@ A replacement for the default docker-ps that tries really hard to fit within you
 By default, my `docker ps` output is really wide and every line wraps around into three.
 This (obviously) breaks the tabular display and makes everything chaotic.  
 *(This gets especially bad if one container has multiple port mappings, and they are all displayed in a single row)*
-It doesn’t look like we’ll get improved output in the foreseeable future (see [moby#7477](https://github.com/moby/moby/issues/7477)), so I decided to make my own drop-in replacement.  
+It doesn't look like we'll get improved output in the foreseeable future (see [moby#7477](https://github.com/moby/moby/issues/7477)), so I decided to make my own drop-in replacement.  
 
 ## Features
 
@@ -45,6 +45,17 @@ sudo wget "https://github.com/Mikescher/better-docker-ps/releases/latest/downloa
 
 ### Optional steps
  - Alias the docker ps command to `dops` (see [section below](#usage-as-drop-in-replacement))
+
+### Building from source
+
+If you want to build `dops` from source, you need to have Go installed.
+
+```sh
+git clone https://github.com/Mikescher/better-docker-ps.git
+cd better-docker-ps
+make build
+mv _out/dops "$HOME/.local/bin/"
+```
 
 ## Screenshots
 

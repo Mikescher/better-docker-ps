@@ -2,7 +2,10 @@ package cli
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 
@@ -30,7 +33,7 @@ type Options struct {
 	Input            *string
 	All              bool
 	WithSize         bool
-	Filter *map[string][]string
+	Filter           *map[string][]string
 	Limit            int
 	DefaultFormat    bool
 	Format           []string // if more than 1 value, we use the later values as fallback for too-small terminal
@@ -83,33 +86,55 @@ func DefaultCLIOptions() Options {
 	}
 }
 
+func getDefaultSocket() string {
+	if runtime.GOOS == "darwin" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "/var/run/docker.sock"
+		}
+		return filepath.Join(home, ".docker/run/docker.sock")
+	}
+	return "/var/run/docker.sock"
+}
+
 func (o Options) GetSocket() string {
-	const defaultSocket = "/var/run/docker.sock"
+
+	// [1] Manually specified socket
 
 	if o.Socket != "auto" {
 		return o.Socket
 	}
 
+	// [2] Auto-detect from current docker context
+
 	res, err := cmdext.Runner("docker").Arg("context").Arg("list").Arg("--format").Arg("json").Timeout(10 * time.Second).FailOnTimeout().FailOnExitCode().Run()
-	if err != nil {
-		// on error we just return the default socket
-		return defaultSocket
-	}
-
-	// json format is actually jsonlines, so read line-by-line until you find the active one
-	for _, line := range strings.Split(res.StdOut, "\n") {
-		var context dockerContext
-		err = json.Unmarshal([]byte(line), &context)
-		if err != nil {
-			continue
-		}
-		if context.Current {
-			return context.socket()
+	if err == nil {
+		for _, line := range strings.Split(res.StdOut, "\n") {
+			var context dockerContext
+			err = json.Unmarshal([]byte(line), &context)
+			if err != nil {
+				continue
+			}
+			if context.Current {
+				return context.socket()
+			}
 		}
 	}
 
-	// if we don't have a current context, we just return the default socket
-	return defaultSocket
+	// [3] MacOS homedir
+
+	if runtime.GOOS == "darwin" {
+		if home, err := os.UserHomeDir(); err == nil {
+			fp := filepath.Join(home, ".docker/run/docker.sock")
+			if _, err = os.Stat(fp); err == nil {
+				return fp
+			}
+		}
+	}
+
+	// [4] Default
+
+	return "/var/run/docker.sock"
 }
 
 type dockerContext struct {
@@ -123,9 +148,10 @@ type dockerContext struct {
 
 var unixSocketPrefixPat = regexp.MustCompile("^unix://")
 
-// Get the socket from the docker context line.
-//
-// This just strips the `unix://` prefix from it if it is there.
 func (ctx dockerContext) socket() string {
 	return unixSocketPrefixPat.ReplaceAllString(ctx.DockerEndpoint, "")
+}
+
+func p(v bool) *bool {
+	return &v
 }
