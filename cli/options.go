@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"regexp"
+	"strings"
 	"time"
 
 	"git.blackforestbytes.com/BlackForestBytes/goext/cmdext"
@@ -95,14 +96,16 @@ func (o Options) GetSocket() string {
 		return defaultSocket
 	}
 
-	var context dockerContext
-	err = json.Unmarshal([]byte(res.StdOut), &context)
-	if err != nil {
-		// on error we just return the default socket
-		return defaultSocket
-	}
-	if context.Current {
-		return context.socket()
+	// json format is actually jsonlines, so read line-by-line until you find the active one
+	for _, line := range strings.Split(res.StdOut, "\n") {
+		var context dockerContext
+		err = json.Unmarshal([]byte(line), &context)
+		if err != nil {
+			continue
+		}
+		if context.Current {
+			return context.socket()
+		}
 	}
 
 	// if we don't have a current context, we just return the default socket
