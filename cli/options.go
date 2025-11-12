@@ -29,7 +29,7 @@ type Options struct {
 	Input            *string
 	All              bool
 	WithSize         bool
-	Filter           *map[string]string
+	Filter *map[string][]string
 	Limit            int
 	DefaultFormat    bool
 	Format           []string // if more than 1 value, we use the later values as fallback for too-small terminal
