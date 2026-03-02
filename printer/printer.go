@@ -46,6 +46,10 @@ func Width(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) int
 
 	}
 
+	if len(cells) == 0 {
+		return 0
+	}
+
 	lens := make([]int, len(cells[0]))
 	for _, row := range cells {
 		for i, cell := range row {
@@ -96,6 +100,10 @@ func Print(ctx *cli.PSContext, data []docker.ContainerSchema, cols []ColFun) {
 			cells = append(cells, row)
 		}
 
+	}
+
+	if len(cells) == 0 {
+		return
 	}
 
 	lens := make([]int, len(cells[0]))
