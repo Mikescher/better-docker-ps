@@ -67,6 +67,10 @@ func executeSingle(ctx *cli.PSContext, clear bool) error {
 		data = doSort(ctx, data, ctx.Opt.SortColumns, ctx.Opt.SortDirection)
 	}
 
+	if ctx.Opt.Search != nil {
+		data = doSearch(ctx, data, *ctx.Opt.Search)
+	}
+
 	for i, v := range ctx.Opt.Format {
 
 		if clear {
@@ -84,6 +88,34 @@ func executeSingle(ctx *cli.PSContext, clear bool) error {
 	}
 
 	return pserr.DirectOutput.New("Missing format specification for output")
+}
+
+func doSearch(ctx *cli.PSContext, data []docker.ContainerSchema, needle string) []docker.ContainerSchema {
+	needle = strings.ToLower(needle)
+
+	haystackFormat := ""
+	for _, f := range ctx.Opt.Format {
+		if strings.HasPrefix(f, "table ") {
+			haystackFormat = f
+			break
+		}
+	}
+
+	result := make([]docker.ContainerSchema, 0, len(data))
+	for _, cont := range data {
+		hay := cont.ID + " " + strings.Join(cont.Names, " ") + " " + cont.Image + " " + cont.Command
+		if haystackFormat != "" {
+			for _, fn := range parseTableDef(haystackFormat) {
+				hay += " " + strings.Join(fn(ctx, data, &cont), " ")
+			}
+		} else if len(ctx.Opt.Format) > 0 {
+			hay += " " + replaceSingleLineColumnData(ctx, data, cont, ctx.Opt.Format[0])
+		}
+		if strings.Contains(strings.ToLower(hay), needle) {
+			result = append(result, cont)
+		}
+	}
+	return result
 }
 
 func doSort(ctx *cli.PSContext, data []docker.ContainerSchema, skeys []string, sdirs []cli.SortDirection) []docker.ContainerSchema {

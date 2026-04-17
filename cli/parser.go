@@ -179,6 +179,8 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 
 					opt.Filter = &filter
 				}
+			} else if tk == "search" {
+				opt.Search = langext.Ptr(tv)
 			} else if tk == "format" {
 				for _, elem := range tvarr {
 					if opt.DefaultFormat {
@@ -351,6 +353,11 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 			}
 			filter[spl[0]] = []string{spl[1]}
 			opt.Filter = &filter
+			continue
+		}
+
+		if (arg.Key == "search" || arg.Key == "g") && arg.Value != nil {
+			opt.Search = langext.Ptr(*arg.Value)
 			continue
 		}
 
