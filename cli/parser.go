@@ -171,7 +171,7 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 						return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "': Filter value must have a key and a value (a=b): " + elem)
 					}
 					if opt.Filter == nil {
-						_v := make(map[string][]string) 
+						_v := make(map[string][]string)
 						opt.Filter = &_v
 					}
 					filter := *opt.Filter
@@ -335,13 +335,13 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 			continue
 		}
 
-		if (arg.Key == "filter") && arg.Value != nil {
+		if (arg.Key == "filter" || arg.Key == "f") && arg.Value != nil {
 			spl := strings.SplitN(*arg.Value, "=", 2)
 			if len(spl) != 2 {
 				return Options{}, pserr.DirectOutput.New("Filter argument must have a key and a value (a=b): " + arg.Key)
 			}
 			if opt.Filter == nil {
-				_v := make(map[string][]string) 
+				_v := make(map[string][]string)
 				opt.Filter = &_v
 			}
 			filter := *opt.Filter
