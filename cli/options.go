@@ -34,6 +34,7 @@ type Options struct {
 	All              bool
 	WithSize         bool
 	Filter           *map[string][]string
+	Search           *string
 	Limit            int
 	DefaultFormat    bool
 	Format           []string // if more than 1 value, we use the later values as fallback for too-small terminal

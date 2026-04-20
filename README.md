@@ -171,6 +171,7 @@ The following keys are supported:
  - all
  - size
  - filter (= string array)
+ - search
  - format (= string array)
  - last
  - latest
@@ -210,6 +211,7 @@ Options (default):
   --version                          Show version.
   --all , -a                         Show all containers (default shows just running)
   --filter <ftr>, -f <ftr>           Filter output based on conditions provided
+  --search <str>, -g <str>           Filter output by substring match across all visible columns (case-insensitive)
   --format <fmt>                     Pretty-print containers using a Go template
   --last , -n                        Show n last created containers (includes all states)
   --latest , -l                      Show the latest created container (includes all states)

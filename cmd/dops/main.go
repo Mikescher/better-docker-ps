@@ -88,6 +88,7 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  --version                          Show version.")
 	ctx.PrintPrimaryOutput("  --all , -a                         Show all containers (default shows just running)")
 	ctx.PrintPrimaryOutput("  --filter <ftr>, -f <ftr>           Filter output based on conditions provided")
+	ctx.PrintPrimaryOutput("  --search <str>, -g <str>           Filter output by substring match across all visible columns (case-insensitive)")
 	ctx.PrintPrimaryOutput("  --format <fmt>                     Pretty-print containers using a Go template")
 	ctx.PrintPrimaryOutput("  --last , -n                        Show n last created containers (includes all states)")
 	ctx.PrintPrimaryOutput("  --latest , -l                      Show the latest created container (includes all states)")
