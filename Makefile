@@ -10,6 +10,10 @@ clean:
 	rm ./_out/*
 
 package:
+	@echo "Make sure you have updated file://$(shell pwd)/consts/version.go"
+	@echo "Make sure youhave created+pished a matching tag"
+	@read -p "Continue?"
+
 	go clean
 	rm -rf ./_out/*
 
