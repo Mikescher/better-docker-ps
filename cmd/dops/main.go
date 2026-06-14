@@ -139,5 +139,6 @@ func printHelp(ctx *cli.PSContext) {
 	ctx.PrintPrimaryOutput("  {{.PublishedPorts}}                Published ports")
 	ctx.PrintPrimaryOutput("  {{.PublicPorts}}                   Only the public part of published ports")
 	ctx.PrintPrimaryOutput("  {{.IP}                             Internal IP Address")
+	ctx.PrintPrimaryOutput("  {{.User}                           User the container runs as (queried via container-inspect)")
 	ctx.PrintPrimaryOutput("")
 }

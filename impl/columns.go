@@ -59,6 +59,7 @@ var ColumnMap = map[string]ColumnDef{
 	"Mounts":              {ColMounts, SortMounts},
 	"Networks":            {ColNetworks, SortNetworks},
 	"IP":                  {ColIP, SortIP},
+	"User":                {ColUser, SortUser},
 }
 
 func ColContainerID(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
@@ -508,6 +509,18 @@ func ColNetworks(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *doc
 	return r
 }
 
+func ColUser(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
+	if cont == nil {
+		return []string{"USER"}
+	}
+
+	if cont.Config == nil {
+		return []string{}
+	}
+
+	return []string{cont.Config.User}
+}
+
 func ColPlaintext(str string) printer.ColFun {
 	return func(ctx *cli.PSContext, allData []docker.ContainerSchema, cont *docker.ContainerSchema) []string {
 		return []string{str}
@@ -816,6 +829,19 @@ func SortNetworks(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.Con
 	langext.SortStable(ntwrk2)
 
 	return langext.CompareArr(ntwrk1, ntwrk2)
+}
+
+func SortUser(ctx *cli.PSContext, v1 *docker.ContainerSchema, v2 *docker.ContainerSchema) int {
+	u1 := ""
+	if v1.Config != nil {
+		u1 = v1.Config.User
+	}
+	u2 := ""
+	if v2.Config != nil {
+		u2 = v2.Config.User
+	}
+
+	return langext.Compare(u1, u2)
 }
 
 // #####################################################################################################################

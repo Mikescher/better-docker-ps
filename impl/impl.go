@@ -6,6 +6,7 @@ import (
 	"better-docker-ps/printer"
 	"better-docker-ps/pserr"
 	"encoding/json"
+	"fmt"
 	"git.blackforestbytes.com/BlackForestBytes/goext/langext"
 	"git.blackforestbytes.com/BlackForestBytes/goext/mathext"
 	"git.blackforestbytes.com/BlackForestBytes/goext/syncext"
@@ -44,8 +45,8 @@ func Watch(ctx *cli.PSContext, d time.Duration) error {
 }
 
 func executeSingle(ctx *cli.PSContext, clear bool) error {
-	for _, fmt := range ctx.Opt.Format {
-		if strings.Contains(fmt, "{{.Size}}") {
+	for _, f := range ctx.Opt.Format {
+		if strings.Contains(f, "{{.Size}}") {
 			ctx.Opt.WithSize = true
 		}
 	}
@@ -62,6 +63,8 @@ func executeSingle(ctx *cli.PSContext, clear bool) error {
 	if err != nil {
 		return pserr.DirectOutput.Wrap(err, "Failed to decode Docker API response")
 	}
+
+	enrichWithInspectData(ctx, data)
 
 	if len(ctx.Opt.SortColumns) > 0 {
 		data = doSort(ctx, data, ctx.Opt.SortColumns, ctx.Opt.SortDirection)
@@ -88,6 +91,43 @@ func executeSingle(ctx *cli.PSContext, clear bool) error {
 	}
 
 	return pserr.DirectOutput.New("Missing format specification for output")
+}
+
+// enrichWithInspectData fetches additional per-container data from the container-inspect endpoint,
+// but only when a requested column actually needs it (currently only the User column).
+// The container-list endpoint does not return Config.User, so it has to be queried separately.
+func enrichWithInspectData(ctx *cli.PSContext, data []docker.ContainerSchema) {
+	if !needsInspectData(ctx) {
+		return
+	}
+
+	// inspect is not available when the data was loaded from an --input file
+	if ctx.Opt.Input != nil {
+		return
+	}
+
+	for i := range data {
+		insp, err := docker.InspectContainer(ctx, data[i].ID)
+		if err != nil {
+			ctx.PrintVerbose(fmt.Sprintf("Failed to inspect container '%s': %v", data[i].ID, err.Error()))
+			continue
+		}
+		data[i].Config = &insp.Config
+	}
+}
+
+func needsInspectData(ctx *cli.PSContext) bool {
+	for _, f := range ctx.Opt.Format {
+		if strings.Contains(f, ".User") || strings.Contains(f, ".Config") {
+			return true
+		}
+	}
+	for _, s := range ctx.Opt.SortColumns {
+		if s == "User" {
+			return true
+		}
+	}
+	return false
 }
 
 func doSearch(ctx *cli.PSContext, data []docker.ContainerSchema, needle string) []docker.ContainerSchema {

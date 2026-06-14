@@ -24,7 +24,9 @@ More Changes from default docker-ps:
  - Show the ImageName (by default) without the registry prefix, and split ImageName and ImageTag into two columns.
  - Added the columns IP and NETWORK to the default column set (if they fit)
  - Added support for a few new columns (via --format):  
-   `{{.ImageName}`, `{{.ImageTag}`, `{{.Tag}`, `{{.ImageRegistry}`, `{{.Registry}`, `{{.ShortCommand}`, `{{.LabelKeys}`, `{{.IP}`                         
+   `{{.ImageName}`, `{{.ImageTag}`, `{{.Tag}`, `{{.ImageRegistry}`, `{{.Registry}`, `{{.ShortCommand}`, `{{.LabelKeys}`, `{{.IP}`, `{{.User}`                         
+ - The `{{.User}}` column shows the user a container runs as (`Config.User`). Because this is not part of the
+   cheaper container-list endpoint, dops only queries the (slower) container-inspect endpoint when this column is used.
  - Added options to control the color-output, the used socket, the time-zone and time-format, etc (see `./dops --help`) 
 
 ## Getting started
@@ -266,4 +268,5 @@ Available --format keys (extra | do not exist in `docker ps`):
   {{.NotPublishedPorts}}             Exposed but not published ports
   {{.PublicPorts}}                   Only the public part of published ports
   {{.IP}}                            Internal IP Address
+  {{.User}}                          User the container runs as (queried via container-inspect)
 ~~~~~~

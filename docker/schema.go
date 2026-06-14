@@ -21,6 +21,19 @@ type ContainerSchema struct {
 	Mounts          []ContainerMount         `json:"Mounts"`
 	SizeRw          int64                    `json:"SizeRw"`
 	SizeRootFs      int64                    `json:"SizeRootFs"`
+
+	// Config is not returned by the container-list endpoint, it is populated on-demand
+	// from the container-inspect endpoint (e.g. when the User column is requested).
+	Config *ContainerConfig `json:"Config,omitempty"`
+}
+
+type ContainerConfig struct {
+	User string `json:"User"`
+}
+
+// ContainerInspectSchema is the (partial) response of the container-inspect endpoint.
+type ContainerInspectSchema struct {
+	Config ContainerConfig `json:"Config"`
 }
 
 func (s ContainerSchema) PortsSorted() []PortSchema {
