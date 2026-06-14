@@ -52,6 +52,8 @@ var ColumnMap = map[string]ColumnDef{
 	"Status":              {ColStatus, SortStatus},
 	"Size":                {ColSize, SortSize},
 	"Names":               {ColName, SortName},
+	"Name":                {ColName, SortName},
+	"ContainerID":         {ColContainerID, SortContainerID},
 	"Labels":              {ColLabels, SortLabels},
 	"LabelKeys":           {ColLabelKeys, SortLabelKeys},
 	"Mounts":              {ColMounts, SortMounts},

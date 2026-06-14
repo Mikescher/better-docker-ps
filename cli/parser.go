@@ -473,11 +473,24 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 		return Options{}, pserr.DirectOutput.New(fmt.Sprintf("Must specify the same number of values in --sort and --sort-direction ( %d <> %d )", len(opt.SortDirection), len(opt.SortColumns)))
 	}
 
-	for _, colkey := range opt.SortColumns {
-		if !langext.InArray(colkey, columnKeys) {
+	for i, colkey := range opt.SortColumns {
+		canonical, ok := matchColumnKey(colkey, columnKeys)
+		if !ok {
 			return Options{}, pserr.DirectOutput.New(fmt.Sprintf("Unknown column : '%s' in --sort", colkey))
 		}
+		opt.SortColumns[i] = canonical // normalize to the canonical column-key casing
 	}
 
 	return opt, nil
+}
+
+func matchColumnKey(colkey string, columnKeys []string) (string, bool) {
+	norm := func(v string) string { return strings.ToUpper(strings.ReplaceAll(v, " ", "")) }
+	needle := norm(colkey)
+	for _, ck := range columnKeys {
+		if norm(ck) == needle {
+			return ck, true
+		}
+	}
+	return "", false
 }
