@@ -283,6 +283,8 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 		}
 	}
 
+	cliFormatSeen := false
+
 	for _, arg := range allOptionArguments {
 
 		if (arg.Key == "h" || arg.Key == "help") && arg.Value == nil {
@@ -390,11 +392,12 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 		}
 
 		if (arg.Key == "format") && arg.Value != nil {
-			if opt.DefaultFormat {
+			if opt.DefaultFormat || !cliFormatSeen {
 				opt.Format = make([]string, 0)
 			}
 			opt.Format = append(opt.Format, *arg.Value)
 			opt.DefaultFormat = false
+			cliFormatSeen = true
 			continue
 		}
 
