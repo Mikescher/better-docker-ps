@@ -3,17 +3,18 @@ package cli
 import (
 	"better-docker-ps/pserr"
 	"fmt"
-	"github.com/BurntSushi/toml"
-	"github.com/kirsle/configdir"
-	"git.blackforestbytes.com/BlackForestBytes/goext/timeext"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/joomcode/errorx"
+	"git.blackforestbytes.com/BlackForestBytes/goext/timeext"
+	"github.com/BurntSushi/toml"
+	"github.com/kirsle/configdir"
+
 	"git.blackforestbytes.com/BlackForestBytes/goext/langext"
+	"github.com/joomcode/errorx"
 )
 
 func ParseCommandline(columnKeys []string) (Options, error) {
@@ -22,6 +23,34 @@ func ParseCommandline(columnKeys []string) (Options, error) {
 		return Options{}, errorx.Decorate(err, "failed to parse commandline")
 	}
 	return o, nil
+}
+
+func findConfigFile() (string, []byte, bool) {
+	candidates := make([]string, 0, 3)
+
+	candidates = append(candidates, filepath.Join(configdir.LocalConfig(), "dops.conf"))
+
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		candidates = append(candidates, filepath.Join(xdg, "dops.conf"))
+	}
+
+	if home, err := os.UserHomeDir(); err == nil {
+		candidates = append(candidates, filepath.Join(home, ".config", "dops.conf"))
+	}
+
+	seen := make(map[string]bool, len(candidates))
+	for _, p := range candidates {
+		if seen[p] {
+			continue
+		}
+		seen[p] = true
+
+		if v, err := os.ReadFile(p); err == nil {
+			return p, v, true
+		}
+	}
+
+	return "", nil, false
 }
 
 func parseCommandlineInternal(columnKeys []string) (Options, error) {
@@ -105,12 +134,11 @@ func parseCommandlineInternal(columnKeys []string) (Options, error) {
 
 	opt := DefaultCLIOptions()
 
-	confPath := filepath.Join(configdir.LocalConfig(), "dops.conf")
+	confPath, confData, confFound := findConfigFile()
 
-	if v, err := os.ReadFile(confPath); err == nil {
-
+	if confFound {
 		tomldata := make(map[string]any)
-		_, err = toml.Decode(string(v), &tomldata)
+		_, err := toml.Decode(string(confData), &tomldata)
 		if err != nil {
 			return Options{}, pserr.DirectOutput.New("Failed to parse config file '" + confPath + "': " + err.Error())
 		}

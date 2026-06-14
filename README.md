@@ -158,7 +158,11 @@ $ ./dops --format "table {{.ID}}\\tNAME:{{ printf \"%.10s\" (join .Names \";\") 
 
 You can also configure some/most of the options via a configuration file.  
 Place a TOML formatted file in `$HOME/.config/dops.conf` / `$XDG_CONFIG_HOME/dops.conf`.  
-( `~/Library/Application Support/dops.conf` under macOS )
+( `~/Library/Application Support/dops.conf` is also supported under macOS )
+
+The first existing file from the following locations is used:
+ - `$XDG_CONFIG_HOME/dops.conf` (or the platform default, e.g. `~/Library/Application Support/dops.conf` under macOS)
+ - `~/.config/dops.conf`
 
 The following keys are supported:
  - verbose
